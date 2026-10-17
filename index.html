@@ -19,7 +19,7 @@ body { margin:0; padding:0; background:#eef2f5; color:#1f2937;
 .toolbar select, .toolbar button { padding:7px 12px; border:1px solid #cbd5e1; background:#fff;
   border-radius:8px; font-size:13px; cursor:pointer; }
 .toolbar button:hover, .toolbar select:hover { border-color:#14b8a6; }
-#voiceWarn { display:none; margin-top:8px; font-size:12.5px; color:#b45309;
+#voiceWarn { display:block; margin-top:6px; font-size:12px; color:#64748b;
   background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:6px 10px; }
 main { max-width:900px; margin:0 auto; padding:18px 14px 60px; }
 details.unit { background:#fff; border:1px solid #e2e8f0; border-radius:14px;
@@ -65,9 +65,10 @@ summary::-webkit-details-marker { display:none; }
     </select>
     <button onclick="expandAll(true)">全部展开</button>
     <button onclick="expandAll(false)">全部收起</button>
+    <button onclick="testVoice()">🔊 试听</button>
     <button onclick="stopAll()">⏹ 停止</button>
   </div>
-  <div id="voiceWarn">⚠ 当前浏览器未检测到语音，朗读功能可能不可用。建议使用 Edge / Chrome 浏览器打开。</div>
+  <div id="voiceWarn">如果点 🔊 没声音：先调高音量、关掉 iPhone 侧边的静音开关；仍不行请点右上角「试听」自查，或用 Safari / Chrome 打开。</div>
 </header>
 <main id="app"></main>
 <script>
@@ -110,39 +111,101 @@ function render(){
   app.appendChild(tip);
 }
 
-/* ---------- 语音 ---------- */
+/* ---------- 发音引擎 ---------- */
+/* 手机（尤其微信内置浏览器）对 speechSynthesis 支持很差，经常完全无声。
+   因此改为「在线发音音频优先 + 浏览器 TTS 兜底」：<audio> 在微信里可用，TTS 不可靠。 */
 let voices = [];
-function loadVoices(){ voices = window.speechSynthesis ? speechSynthesis.getVoices() : []; }
-if(window.speechSynthesis){
-  loadVoices();
-  speechSynthesis.onvoiceschanged = loadVoices;
-}else{
-  document.getElementById('voiceWarn').style.display = 'block';
-}
+function loadVoices(){ voices = window.speechSynthesis ? (speechSynthesis.getVoices()||[]) : []; }
+if(window.speechSynthesis){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
 function pickVoice(lang){
   loadVoices();
   if(!voices.length) return null;
   const want = lang === 'zh' ? 'zh' : 'en';
   const exact = lang === 'zh' ? 'zh-cn' : 'en-us';
-  let v = voices.find(function(x){ return (x.lang||'').toLowerCase().replace('_','-') === exact; });
-  if(!v) v = voices.find(function(x){ return (x.lang||'').toLowerCase().indexOf(want) === 0; });
+  const lt = function(x){ return (x.lang||'').toLowerCase().replace('_','-'); };
+  let v = voices.find(function(x){ return lt(x) === exact && x.localService; })
+        || voices.find(function(x){ return lt(x) === exact; })
+        || voices.find(function(x){ return lt(x).indexOf(want) === 0 && x.localService; })
+        || voices.find(function(x){ return lt(x).indexOf(want) === 0; });
   return v || null;
 }
 function rate(){ const s = document.getElementById('speed'); return s ? parseFloat(s.value) : 0.85; }
-function speak(text, lang, onend, onerr){
-  if(!window.speechSynthesis) return;
-  speechSynthesis.cancel();
+
+/* 在线发音（有道公开发音接口，国内可直接访问） */
+function audioUrl(text, lang){
+  return 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(text)
+       + (lang === 'zh' ? '&le=zh' : '&type=1');
+}
+let audioEl = null;
+function getAudio(){
+  if(!audioEl){ audioEl = new Audio(); audioEl.preload = 'auto'; }
+  return audioEl;
+}
+function stopSound(){
+  try{ if(audioEl){ audioEl.pause(); audioEl.currentTime = 0; } }catch(e){}
+  if(window.speechSynthesis){ try{ speechSynthesis.cancel(); }catch(e){} }
+}
+
+/* 浏览器 TTS 兜底：修复 cancel 紧跟 speak 被吞、以及对象被回收的问题 */
+let lastUtt = null;
+function ttsSpeak(text, lang, onend, onerr){
+  if(!window.speechSynthesis){ if(onerr) onerr(); return; }
+  try{ speechSynthesis.resume(); }catch(e){}
   const u = new SpeechSynthesisUtterance(text);
   u.lang = lang === 'zh' ? 'zh-CN' : 'en-US';
   const v = pickVoice(lang); if(v) u.voice = v;
   u.rate = rate();
+  lastUtt = u;                       // 保持引用，避免被 GC 中断
   if(onend) u.onend = onend;
   if(onerr) u.onerror = onerr;
-  speechSynthesis.speak(u);
+  setTimeout(function(){ try{ speechSynthesis.speak(u); }catch(e){ if(onerr) onerr(); } }, 0);
 }
+
+/* 统一入口：先试在线音频，播不出来自动切浏览器 TTS */
+function speak(text, lang, onend, onerr){
+  text = String(text == null ? '' : text).trim();
+  if(!text){ if(onend) onend(); return; }
+  stopSound();
+  const a = getAudio();
+  let finished = false, timer = null;
+  const done = function(){
+    if(finished) return; finished = true;
+    if(timer) clearTimeout(timer);
+    a.onended = a.onerror = null;
+    if(onend) onend();
+  };
+  const fail = function(){
+    if(finished) return; finished = true;
+    if(timer) clearTimeout(timer);
+    a.onended = a.onerror = null;
+    try{ a.pause(); }catch(e){}
+    ttsSpeak(text, lang, onend, onerr);
+  };
+  timer = setTimeout(fail, 8000);   // 8 秒还播不完视为失败
+  a.onended = done;
+  a.onerror = fail;
+  a.src = audioUrl(text, lang);
+  try{ a.playbackRate = rate(); }catch(e){}
+  const p = a.play();
+  if(p && p.catch) p.catch(fail);
+}
+
+/* 发音自检 */
+function testVoice(){
+  const box = document.getElementById('voiceWarn');
+  box.style.display = 'block';
+  box.className = '';
+  box.textContent = '🔊 正在试听…';
+  speak('hello', 'en', function(){
+    box.textContent = '✅ 发音正常（如仍听不到，请调高音量；iPhone 请关掉侧边静音开关）。';
+  }, function(){
+    box.textContent = '⚠ 发音失败：请改用 Safari / Chrome 打开，或检查网络。';
+  });
+}
+
 function stopAll(){
   playing = false; curSteps = null;
-  if(window.speechSynthesis) speechSynthesis.cancel();
+  stopSound();
   clearHi();
 }
 
@@ -201,6 +264,17 @@ document.getElementById('search').addEventListener('input', function(){
 function expandAll(open){
   document.querySelectorAll('details.unit').forEach(function(d){ d.open = open; });
 }
+
+/* iOS/微信：首次真实点击时用一次性静音音频解锁播放能力（不影响正常朗读） */
+window.addEventListener('click', function prime(){
+  try{
+    const a = new Audio();
+    a.src = audioUrl('a', 'en');
+    a.muted = true;
+    const p = a.play();
+    if(p && p.then) p.then(function(){ try{ a.pause(); }catch(e){} }).catch(function(){});
+  }catch(e){}
+}, { once:true, capture:true });
 
 render();
 </script>
