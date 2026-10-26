@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>英语单词学习卡 · 三~四年级（外研版 Join In）</title>
+<style>
+* { box-sizing: border-box; }
+body { margin:0; padding:0; background:#eef2f5; color:#1f2937;
+  font-family:-apple-system,"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif; }
+.top { position:sticky; top:0; z-index:10; background:#fff; border-bottom:1px solid #e2e8f0;
+  padding:14px 18px 10px; box-shadow:0 1px 4px rgba(15,23,42,.06); }
+.top h1 { margin:0; font-size:20px; }
+.sub { color:#64748b; font-size:12.5px; margin-top:3px; }
+.toolbar { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; align-items:center; }
+.toolbar input { flex:1; min-width:180px; padding:7px 12px; border:1px solid #cbd5e1;
+  border-radius:8px; font-size:14px; outline:none; }
+.toolbar input:focus { border-color:#14b8a6; }
+.toolbar select, .toolbar button { padding:7px 12px; border:1px solid #cbd5e1; background:#fff;
+  border-radius:8px; font-size:13px; cursor:pointer; }
+.toolbar button:hover, .toolbar select:hover { border-color:#14b8a6; }
+#voiceWarn { display:block; margin-top:6px; font-size:12px; color:#64748b;
+  background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:6px 10px; }
+main { max-width:900px; margin:0 auto; padding:18px 14px 60px; }
+details.unit { background:#fff; border:1px solid #e2e8f0; border-radius:14px;
+  margin-bottom:14px; overflow:hidden; box-shadow:0 1px 3px rgba(15,23,42,.05); }
+summary { list-style:none; cursor:pointer; padding:13px 16px; display:flex; align-items:center;
+  gap:10px; background:linear-gradient(90deg,#0f766e,#14b8a6); color:#fff; }
+summary::-webkit-details-marker { display:none; }
+.uname { font-size:16.5px; font-weight:600; flex:1; }
+.meta { font-size:12px; opacity:.9; }
+.play-all { border:none; background:rgba(255,255,255,.22); color:#fff; padding:5px 12px;
+  border-radius:999px; font-size:12.5px; cursor:pointer; }
+.play-all:hover { background:rgba(255,255,255,.35); }
+.cards { padding:6px 12px 12px; }
+.card { border:1px solid #e8edf2; border-left:4px solid #14b8a6; border-radius:10px;
+  padding:10px 14px; margin-top:10px; background:#fff; transition:background .2s; }
+.card.hi { background:#ecfdf5; border-left-color:#f59e0b; }
+.r1 { display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; }
+.num { color:#94a3b8; font-size:12px; font-family:monospace; }
+.en { font-size:18px; font-weight:700; color:#0f172a; font-family:Georgia,"Times New Roman",serif; }
+.ipa { color:#0e7490; font-size:13.5px; }
+.spacer { flex:1; }
+.tts { border:1px solid #cbd5e1; background:#f8fafc; border-radius:999px; padding:3px 10px;
+  font-size:12px; cursor:pointer; white-space:nowrap; }
+.tts:hover { background:#ccfbf1; border-color:#14b8a6; }
+.zh { margin-top:5px; color:#475569; font-size:14.5px; }
+.sent { margin-top:7px; padding-top:7px; border-top:1px dashed #e2e8f0; display:flex;
+  gap:8px; align-items:flex-start; font-size:14px; }
+.sen-en { font-family:Georgia,"Times New Roman",serif; color:#334155; }
+.sen-zh { color:#64748b; }
+.none { text-align:center; color:#94a3b8; padding:30px 0; font-size:14px; }
+.books { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.books button { padding:7px 14px; border:1px solid #cbd5e1; background:#fff; border-radius:999px;
+  font-size:13.5px; cursor:pointer; color:#475569; transition:all .15s; }
+.books button:hover { border-color:#14b8a6; color:#0f766e; }
+.books button.on { background:linear-gradient(90deg,#0f766e,#14b8a6); color:#fff; border-color:#0f766e;
+  font-weight:600; box-shadow:0 2px 6px rgba(20,184,166,.28); }
+.ver { margin-top:7px; font-size:12px; color:#0f766e; background:#f0fdfa; border:1px solid #ccfbf1;
+  border-radius:8px; padding:5px 10px; display:inline-block; }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>英语单词学习卡 · 按单元</h1>
+  <div class="sub">每个词条含音标、释义、例句，单词 / 释义 / 例句都能点读朗读</div>
+  <div class="books" id="books"></div>
+  <div class="ver" id="ver"></div>
+  <div class="toolbar">
+    <input id="search" type="search" placeholder="🔍 搜索单词、中文或例句…">
+    <select id="speed" title="朗读速度">
+      <option value="0.65">慢速</option>
+      <option value="0.85" selected>正常</option>
+      <option value="1">快速</option>
+    </select>
+    <button onclick="expandAll(true)">全部展开</button>
+    <button onclick="expandAll(false)">全部收起</button>
+    <button onclick="testVoice()">🔊 试听</button>
+    <button onclick="stopAll()">⏹ 停止</button>
+  </div>
+  <div id="voiceWarn">如果点 🔊 没声音：先调高音量、关掉 iPhone 侧边的静音开关；仍不行请点右上角「试听」自查，或用 Safari / Chrome 打开。</div>
+</header>
+<main id="app"></main>
+<script>
+/* ==== book-g3-1.js ==== */
+window.BOOK_G3_1 = {
+  id: "g3-1",
+  name: "三年级上册",
+  version: "外研版 Join In · 三年级上册（2024秋版）",
+  units: [
+    {
+      name: "Welcome unit Let's begin!",
+      words: [
+        { en: "let", ipa: "/let/", zh: "让（用于表示提议或帮忙）", s: "Let me help you.", sc: "让我来帮你。" },
+        { en: "begin", ipa: "/bɪˈɡɪn/", zh: "开始", s: "Let's begin our lesson.", sc: "我们开始上课吧。" },
+        { en: "join", ipa: "/dʒɔɪn/", zh: "加入", s: "Come and join us.", sc: "来加入我们吧。" },
+        { en: "in", ipa: "/ɪn/", zh: "在……中", s: "There is a bird in the tree.", sc: "树上有一只鸟。" },
+        { en: "English", ipa: "/ˈɪŋɡlɪʃ/", zh: "英语", s: "I like English very much.", sc: "我非常喜欢英语。" },
+        { en: "be (am, is, are)", ipa: "/biː/", zh: "是", s: "We are good friends.", sc: "我们是好朋友。" },
+        { en: "easy", ipa: "/ˈiːzi/", zh: "容易的", s: "English is easy for me.", sc: "英语对我来说很容易。" },
+        { en: "come", ipa: "/kʌm/", zh: "来", s: "Please come to my birthday party.", sc: "请来参加我的生日聚会。" },
+        { en: "come on", ipa: "/kʌm ˈɒn/", zh: "来吧", s: "Come on! We are late.", sc: "快点！我们迟到了。" },
+        { en: "and", ipa: "/ənd/", zh: "和", s: "I like apples and bananas.", sc: "我喜欢苹果和香蕉。" },
+        { en: "you", ipa: "/juː/", zh: "你；你们", s: "You are my good friend.", sc: "你是我的好朋友。" },
+        { en: "ready", ipa: "/ˈredi/", zh: "准备好的", s: "Are you ready?", sc: "你准备好了吗？" },
+        { en: "kid", ipa: "/kɪd/", zh: "小孩，儿童", s: "The kids are playing a game.", sc: "孩子们在做游戏。" },
+        { en: "yeah", ipa: "/jeə/", zh: "是", s: "Yeah! We win the game.", sc: "耶！我们赢了比赛。" },
+        { en: "OK", ipa: "/əʊˈkeɪ/", zh: "行，可以", s: "OK, let's go.", sc: "好的，我们走吧。" },
+        { en: "listen", ipa: "/ˈlɪsn/", zh: "听", s: "Listen to the teacher, please.", sc: "请听老师讲。" },
+        { en: "sing", ipa: "/sɪŋ/", zh: "唱", s: "Let's sing an English song.", sc: "我们来唱一首英文歌吧。" },
+        { en: "speak", ipa: "/spiːk/", zh: "说话", s: "Please speak English in class.", sc: "课堂上请说英语。" },
+        { en: "act", ipa: "/ækt/", zh: "表演", s: "Let's act out the story.", sc: "我们来表演这个故事吧。" },
+        { en: "draw", ipa: "/drɔː/", zh: "画，绘画", s: "I can draw a cat.", sc: "我会画一只猫。" },
+        { en: "look", ipa: "/lʊk/", zh: "看", s: "Look at the blackboard, please.", sc: "请看黑板。" },
+        { en: "guess", ipa: "/ɡes/", zh: "猜；猜测", s: "Guess what is in my hand.", sc: "猜猜我手里有什么。" },
+        { en: "write", ipa: "/raɪt/", zh: "写", s: "Write your name here.", sc: "把你的名字写在这里。" },
+        { en: "think", ipa: "/θɪŋk/", zh: "思考", s: "Let me think.", sc: "让我想一想。" },
+        { en: "read", ipa: "/riːd/", zh: "阅读", s: "I read a book every day.", sc: "我每天读一本书。" },
+        { en: "colour", ipa: "/ˈkʌlə/", zh: "给……涂上颜色", s: "Colour the bird yellow.", sc: "把这只鸟涂成黄色。" },
+        { en: "play", ipa: "/pleɪ/", zh: "玩", s: "Let's play a game.", sc: "我们来玩个游戏吧。" },
+        { en: "hello", ipa: "/həˈləʊ/", zh: "你好", s: "Hello, everyone!", sc: "大家好！" }
+      ]
+    },
+    {
+      name: "Unit 1 Hello, hello!",
+      words: [
+        { en: "what", ipa: "/wɒt/", zh: "什么", s: "What is your name?", sc: "你叫什么名字？" },
+        { en: "your", ipa: "/jɔː/", zh: "你的", s: "Is this your pen?", sc: "这是你的钢笔吗？" },
+        { en: "name", ipa: "/neɪm/", zh: "名字", s: "My name is Lily.", sc: "我叫莉莉。" },
+        { en: "I", ipa: "/aɪ/", zh: "我", s: "I am a student.", sc: "我是一名学生。" },
+        { en: "go", ipa: "/ɡəʊ/", zh: "走，去", s: "Let's go to school.", sc: "我们去上学吧。" },
+        { en: "we", ipa: "/wiː/", zh: "我们", s: "We are in the same class.", sc: "我们在同一个班。" },
+        { en: "all", ipa: "/ɔːl/", zh: "每一个", s: "All the kids are here.", sc: "孩子们都到了。" },
+        { en: "love", ipa: "/lʌv/", zh: "喜爱", s: "I love my family.", sc: "我爱我的家人。" },
+        { en: "a (an)", ipa: "/ə；an 读 /ən/", zh: "一个", s: "I have an apple.", sc: "我有一个苹果。" },
+        { en: "clever", ipa: "/ˈklevə/", zh: "聪明的", s: "What a clever boy!", sc: "多聪明的男孩呀！" },
+        { en: "bird", ipa: "/bɜːd/", zh: "鸟", s: "The bird can sing.", sc: "这只鸟会唱歌。" },
+        { en: "him", ipa: "/hɪm/", zh: "他", s: "This is Tom. Do you know him?", sc: "这是汤姆，你认识他吗？" },
+        { en: "good", ipa: "/ɡʊd/", zh: "令人愉快的", s: "That's a good idea.", sc: "那是个好主意。" },
+        { en: "morning", ipa: "/ˈmɔːnɪŋ/", zh: "早晨，早上", s: "I get up at seven in the morning.", sc: "我早上七点起床。" },
+        { en: "good morning", ipa: "/ɡʊd ˈmɔːnɪŋ/", zh: "早上好", s: "Good morning, Miss Li!", sc: "李老师，早上好！" },
+        { en: "goodbye (bye)", ipa: "/ɡʊdˈbaɪ/", zh: "再见", s: "Goodbye, see you tomorrow.", sc: "再见，明天见。" },
+        { en: "night", ipa: "/naɪt/", zh: "夜晚", s: "Good night, Mum.", sc: "妈妈，晚安。" },
+        { en: "this", ipa: "/ðɪs/", zh: "这，这个", s: "This is my friend.", sc: "这是我的朋友。" },
+        { en: "nice", ipa: "/naɪs/", zh: "令人愉快的", s: "Nice to meet you.", sc: "很高兴见到你。" },
+        { en: "to", ipa: "/tuː/", zh: "（用于描述某种行为或状态）", s: "I go to school by bus.", sc: "我坐公交车去上学。" },
+        { en: "meet", ipa: "/miːt/", zh: "认识，结识", s: "Nice to meet you.", sc: "很高兴认识你。" },
+        { en: "happy", ipa: "/ˈhæpi/", zh: "快乐的，高兴的", s: "I am happy today.", sc: "我今天很开心。" },
+        { en: "birthday", ipa: "/ˈbɜːθdeɪ/", zh: "生日", s: "Today is my birthday.", sc: "今天是我的生日。" },
+        { en: "happy birthday", ipa: "/ˌhæpi ˈbɜːθdeɪ/", zh: "生日快乐", s: "Happy birthday to you!", sc: "祝你生日快乐！" },
+        { en: "afternoon", ipa: "/ˌɑːftəˈnuːn/", zh: "下午", s: "Good afternoon, class.", sc: "同学们，下午好。" },
+        { en: "Ms", ipa: "/mɪz/", zh: "女士", s: "Ms Wang is our English teacher.", sc: "王女士是我们的英语老师。" },
+        { en: "how", ipa: "/haʊ/", zh: "如何，怎样", s: "How are you?", sc: "你好吗？" },
+        { en: "today", ipa: "/təˈdeɪ/", zh: "今天", s: "Today is Monday.", sc: "今天是星期一。" },
+        { en: "too", ipa: "/tuː/", zh: "也", s: "I like English, too.", sc: "我也喜欢英语。" },
+        { en: "fine", ipa: "/faɪn/", zh: "很好", s: "I'm fine, thank you.", sc: "我很好，谢谢你。" },
+        { en: "children", ipa: "/ˈtʃɪldrən/", zh: "（child 的复数形式）儿童，小孩", s: "The children are singing.", sc: "孩子们在唱歌。" },
+        { en: "cut", ipa: "/kʌt/", zh: "剪", s: "Cut the paper with scissors.", sc: "用剪刀剪这张纸。" },
+        { en: "my", ipa: "/maɪ/", zh: "我的", s: "This is my schoolbag.", sc: "这是我的书包。" },
+        { en: "hi", ipa: "/haɪ/", zh: "你好", s: "Hi, I'm Sam.", sc: "你好，我是萨姆。" }
+      ]
+    },
+    {
+      name: "Unit 2 Colourful world",
+      words: [
+        { en: "colourful", ipa: "/ˈkʌləfl/", zh: "色彩丰富的", s: "What a colourful world!", sc: "多么多彩的世界啊！" },
+        { en: "world", ipa: "/wɜːld/", zh: "世界", s: "The world is big and beautiful.", sc: "世界又大又美。" },
+        { en: "red", ipa: "/red/", zh: "红色（的）", s: "The apple is red.", sc: "这个苹果是红色的。" },
+        { en: "pink", ipa: "/pɪŋk/", zh: "粉红色（的）", s: "She has a pink dress.", sc: "她有一条粉红色的连衣裙。" },
+        { en: "yellow", ipa: "/ˈjeləʊ/", zh: "黄色（的）", s: "The banana is yellow.", sc: "香蕉是黄色的。" },
+        { en: "orange", ipa: "/ˈɒrɪndʒ/", zh: "橙色（的）", s: "My bag is orange.", sc: "我的书包是橙色的。" },
+        { en: "green", ipa: "/ɡriːn/", zh: "绿色（的）", s: "The leaves are green.", sc: "树叶是绿色的。" },
+        { en: "brown", ipa: "/braʊn/", zh: "棕色（的）", s: "The monkey is brown.", sc: "猴子是棕色的。" },
+        { en: "black", ipa: "/blæk/", zh: "黑色（的）", s: "I have a black cat.", sc: "我有一只黑色的猫。" },
+        { en: "blue", ipa: "/bluː/", zh: "蓝色（的）", s: "The sky is blue.", sc: "天空是蓝色的。" },
+        { en: "white", ipa: "/waɪt/", zh: "白色（的）", s: "The snow is white.", sc: "雪是白色的。" },
+        { en: "purple", ipa: "/ˈpɜːpl/", zh: "紫色（的）", s: "She likes purple flowers.", sc: "她喜欢紫色的花。" },
+        { en: "the", ipa: "/ðə；元音前读 /ði/", zh: "（用于表示正在谈论一个已经提到过、已经知道，或是唯一存在的人或物）", s: "The sun is big and bright.", sc: "太阳又大又亮。" },
+        { en: "rainbow", ipa: "/ˈreɪnbəʊ/", zh: "彩虹", s: "Look! A rainbow in the sky.", sc: "看！天上有彩虹。" },
+        { en: "it", ipa: "/ɪt/", zh: "它", s: "It is a little dog.", sc: "它是一只小狗。" },
+        { en: "oh", ipa: "/əʊ/", zh: "噢，哦", s: "Oh, I see!", sc: "哦，我明白了！" },
+        { en: "start", ipa: "/stɑːt/", zh: "开始", s: "Let's start our class.", sc: "我们开始上课吧。" },
+        { en: "necklace", ipa: "/ˈnekləs/", zh: "项链", s: "What a beautiful necklace!", sc: "多漂亮的项链啊！" },
+        { en: "for", ipa: "/fɔː/", zh: "给", s: "This gift is for you.", sc: "这个礼物是给你的。" },
+        { en: "mum", ipa: "/mʌm/", zh: "妈妈", s: "Mum, where are you?", sc: "妈妈，你在哪里？" },
+        { en: "old", ipa: "/əʊld/", zh: "旧的", s: "This is my old bike.", sc: "这是我的旧自行车。" },
+        { en: "can", ipa: "/kæn/", zh: "能，可以", s: "I can swim.", sc: "我会游泳。" },
+        { en: "paint", ipa: "/peɪnt/", zh: "给……涂颜料", s: "Let's paint the wall blue.", sc: "我们把墙刷成蓝色吧。" },
+        { en: "only", ipa: "/ˈəʊnli/", zh: "只有，仅", s: "I have only one pen.", sc: "我只有一支钢笔。" },
+        { en: "me", ipa: "/miː/", zh: "我", s: "Look at me!", sc: "看我！" },
+        { en: "thank", ipa: "/θæŋk/", zh: "感谢", s: "Thank you very much.", sc: "非常感谢你。" },
+        { en: "dear", ipa: "/dɪə/", zh: "亲爱的", s: "Dear Mum, I love you.", sc: "亲爱的妈妈，我爱你。" },
+        { en: "at", ipa: "/æt/", zh: "朝，向", s: "Look at the blackboard.", sc: "请看黑板。" },
+        { en: "butterfly", ipa: "/ˈbʌtəflaɪ/", zh: "蝴蝶", s: "A butterfly is flying.", sc: "一只蝴蝶在飞。" },
+        { en: "lovely", ipa: "/ˈlʌvli/", zh: "美丽的；可爱的", s: "What a lovely girl!", sc: "多可爱的女孩呀！" },
+        { en: "little", ipa: "/ˈlɪtl/", zh: "小的", s: "I have a little sister.", sc: "我有一个小妹妹。" },
+        { en: "bye-bye", ipa: "/ˌbaɪˈbaɪ/", zh: "再见，拜拜", s: "Bye-bye, see you!", sc: "拜拜，再见！" },
+        { en: "favourite", ipa: "/ˈfeɪvərɪt/", zh: "最喜欢的", s: "Blue is my favourite colour.", sc: "蓝色是我最喜欢的颜色。" },
+        { en: "no", ipa: "/nəʊ/", zh: "不，不是", s: "No, it isn't.", sc: "不，不是的。" },
+        { en: "yes", ipa: "/jes/", zh: "是，对", s: "Yes, you are right.", sc: "是的，你说得对。" },
+        { en: "that", ipa: "/ðæt/", zh: "那，那个", s: "That is my school.", sc: "那是我的学校。" },
+        { en: "right", ipa: "/raɪt/", zh: "正确的，对的", s: "You are right!", sc: "你说得对！" }
+      ]
+    },
+    {
+      name: "Unit 3 Numbers are fun!",
+      words: [
+        { en: "number", ipa: "/ˈnʌmbə/", zh: "数字", s: "Do you know this number?", sc: "你认识这个数字吗？" },
+        { en: "fun", ipa: "/fʌn/", zh: "有趣的", s: "The game is great fun.", sc: "这个游戏真有趣。" },
+        { en: "tiger", ipa: "/ˈtaɪɡə/", zh: "老虎", s: "The tiger can jump.", sc: "老虎会跳。" },
+        { en: "jump", ipa: "/dʒʌmp/", zh: "跳，跃", s: "The rabbit can jump high.", sc: "兔子能跳得很高。" },
+        { en: "do", ipa: "/duː/", zh: "做", s: "What can you do?", sc: "你会做什么？" },
+        { en: "ten", ipa: "/ten/", zh: "十", s: "I have ten fingers.", sc: "我有十根手指。" },
+        { en: "nine", ipa: "/naɪn/", zh: "九", s: "Nine is my lucky number.", sc: "九是我的幸运数字。" },
+        { en: "eight", ipa: "/eɪt/", zh: "八", s: "It's eight o'clock now.", sc: "现在八点了。" },
+        { en: "seven", ipa: "/ˈsevn/", zh: "七", s: "There are seven days in a week.", sc: "一周有七天。" },
+        { en: "six", ipa: "/sɪks/", zh: "六", s: "I get up at six.", sc: "我六点起床。" },
+        { en: "five", ipa: "/faɪv/", zh: "五", s: "Give me five!", sc: "击个掌！" },
+        { en: "four", ipa: "/fɔː/", zh: "四", s: "A year has four seasons.", sc: "一年有四个季节。" },
+        { en: "three", ipa: "/θriː/", zh: "三", s: "I have three good friends.", sc: "我有三个好朋友。" },
+        { en: "two", ipa: "/tuː/", zh: "二", s: "I have two big eyes.", sc: "我有两只大眼睛。" },
+        { en: "one", ipa: "/wʌn/", zh: "一", s: "There is one apple on the desk.", sc: "桌子上有一个苹果。" },
+        { en: "duck", ipa: "/dʌk/", zh: "鸭子", s: "The duck can swim.", sc: "鸭子会游泳。" },
+        { en: "show", ipa: "/ʃəʊ/", zh: "节目", s: "Welcome to our show.", sc: "欢迎观看我们的节目。" },
+        { en: "about", ipa: "/əˈbaʊt/", zh: "即将；接近", s: "It's about six o'clock.", sc: "快六点了。" },
+        { en: "be about to do sth", ipa: "/biː əˈbaʊt tə ˈduː/", zh: "即将做某事", s: "Hurry up! The show is about to begin.", sc: "快点！节目马上就要开始了。" },
+        { en: "dad", ipa: "/dæd/", zh: "爸爸", s: "My dad is a doctor.", sc: "我爸爸是医生。" },
+        { en: "please", ipa: "/pliːz/", zh: "请", s: "Please open the door.", sc: "请开门。" },
+        { en: "hurry", ipa: "/ˈhʌri/", zh: "赶紧，匆忙", s: "Hurry up, or we'll be late.", sc: "快点，不然我们要迟到了。" },
+        { en: "up", ipa: "/ʌp/", zh: "向上，往上", s: "Stand up, please.", sc: "请起立。" },
+        { en: "hurry up", ipa: "/ˌhʌri ˈʌp/", zh: "快点", s: "Hurry up! It's time for class.", sc: "快点！该上课了。" },
+        { en: "wrong", ipa: "/rɒŋ/", zh: "有问题的", s: "What's wrong with you?", sc: "你怎么了？" },
+        { en: "see", ipa: "/siː/", zh: "看见，看到", s: "I can see a bird in the sky.", sc: "我能看见天上有只鸟。" },
+        { en: "many", ipa: "/ˈmeni/", zh: "许多", s: "How many books do you have?", sc: "你有多少本书？" },
+        { en: "how many", ipa: "/haʊ ˈmeni/", zh: "多少", s: "How many ducks can you see?", sc: "你能看到多少只鸭子？" },
+        { en: "get", ipa: "/ɡet/", zh: "移动，去", s: "We get to school at eight.", sc: "我们八点到学校。" },
+        { en: "out", ipa: "/aʊt/", zh: "向外", s: "Let's go out and play.", sc: "我们出去玩吧。" },
+        { en: "get out", ipa: "/ɡet ˈaʊt/", zh: "出去", s: "The cat wants to get out.", sc: "这只猫想出去。" },
+        { en: "have", ipa: "/hæv/", zh: "进行", s: "Let's have a break.", sc: "我们休息一下吧。" },
+        { en: "have a look", ipa: "/hæv ə ˈlʊk/", zh: "看一下", s: "Come and have a look.", sc: "过来看一看。" },
+        { en: "help", ipa: "/help/", zh: "帮助", s: "Can you help me?", sc: "你能帮帮我吗？" },
+        { en: "great", ipa: "/ɡreɪt/", zh: "极好的", s: "That's a great idea!", sc: "那是个极好的主意！" },
+        { en: "late", ipa: "/leɪt/", zh: "迟到的", s: "Don't be late for school.", sc: "上学不要迟到。" },
+        { en: "safe", ipa: "/seɪf/", zh: "安全的", s: "Be safe when you cross the road.", sc: "过马路时要注意安全。" },
+        { en: "call", ipa: "/kɔːl/", zh: "（给……）打电话", s: "Please call me tonight.", sc: "今晚请给我打电话。" }
+      ]
+    },
+    {
+      name: "Unit 4 My school things",
+      words: [
+        { en: "school", ipa: "/skuːl/", zh: "学校", s: "I go to school at eight.", sc: "我八点去上学。" },
+        { en: "thing", ipa: "/θɪŋ/", zh: "东西，物", s: "What's that thing on the desk?", sc: "桌上那个东西是什么？" },
+        { en: "pencil", ipa: "/ˈpensl/", zh: "铅笔", s: "This is my new pencil.", sc: "这是我的新铅笔。" },
+        { en: "case", ipa: "/keɪs/", zh: "盒子", s: "I put my pens in a case.", sc: "我把钢笔放在盒子里。" },
+        { en: "pencil case", ipa: "/ˈpensl keɪs/", zh: "笔袋；铅笔盒", s: "My pencil case is blue.", sc: "我的铅笔盒是蓝色的。" },
+        { en: "pen", ipa: "/pen/", zh: "钢笔", s: "May I borrow your pen?", sc: "我可以借用你的钢笔吗？" },
+        { en: "eraser", ipa: "/ɪˈreɪzə/", zh: "橡皮", s: "Where is my eraser?", sc: "我的橡皮在哪里？" },
+        { en: "schoolbag", ipa: "/ˈskuːlbæɡ/", zh: "书包", s: "My schoolbag is heavy.", sc: "我的书包很沉。" },
+        { en: "ruler", ipa: "/ˈruːlə/", zh: "尺子，直尺", s: "Draw a line with your ruler.", sc: "用尺子画一条线。" },
+        { en: "book", ipa: "/bʊk/", zh: "书籍", s: "This book is very interesting.", sc: "这本书非常有趣。" },
+        { en: "home", ipa: "/həʊm/", zh: "到家，回家", s: "I go home at five.", sc: "我五点回家。" },
+        { en: "where", ipa: "/weə/", zh: "在哪里", s: "Where is my schoolbag?", sc: "我的书包在哪里？" },
+        { en: "picture", ipa: "/ˈpɪktʃə/", zh: "图画", s: "Look at the picture on the wall.", sc: "看墙上的那幅画。" },
+        { en: "on", ipa: "/ɒn/", zh: "在……上面", s: "The book is on the desk.", sc: "书在桌子上。" },
+        { en: "wall", ipa: "/wɔːl/", zh: "墙", s: "There is a map on the wall.", sc: "墙上有一张地图。" },
+        { en: "paper", ipa: "/ˈpeɪpə/", zh: "纸", s: "Draw a cat on the paper.", sc: "在纸上画一只猫。" },
+        { en: "open", ipa: "/ˈəʊpən/", zh: "打开", s: "Open your books, please.", sc: "请打开你们的书。" },
+        { en: "take", ipa: "/teɪk/", zh: "拿", s: "Take your umbrella with you.", sc: "带上你的雨伞。" },
+        { en: "take out", ipa: "/teɪk ˈaʊt/", zh: "拿出", s: "Take out your pencil case.", sc: "拿出你们的铅笔盒。" },
+        { en: "rope", ipa: "/rəʊp/", zh: "绳索", s: "The rope is long.", sc: "这根绳子很长。" },
+        { en: "skipping rope", ipa: "/ˈskɪpɪŋ rəʊp/", zh: "跳绳", s: "I like my skipping rope.", sc: "我喜欢我的跳绳。" }
+      ]
+    },
+    {
+      name: "Unit 5 In my classroom",
+      words: [
+        { en: "classroom", ipa: "/ˈklɑːsrʊm/", zh: "教室", s: "Our classroom is big and clean.", sc: "我们的教室又大又干净。" },
+        { en: "blackboard", ipa: "/ˈblækbɔːd/", zh: "黑板", s: "The teacher writes on the blackboard.", sc: "老师在黑板上写字。" },
+        { en: "door", ipa: "/dɔː/", zh: "门", s: "Please close the door.", sc: "请关门。" },
+        { en: "window", ipa: "/ˈwɪndəʊ/", zh: "窗户", s: "Open the window, please.", sc: "请打开窗户。" },
+        { en: "desk", ipa: "/desk/", zh: "书桌", s: "My desk is near the window.", sc: "我的书桌靠窗。" },
+        { en: "chair", ipa: "/tʃeə/", zh: "椅子", s: "This chair is very soft.", sc: "这把椅子很软。" },
+        { en: "floor", ipa: "/flɔː/", zh: "地面", s: "Don't litter on the floor.", sc: "不要往地上扔垃圾。" },
+        { en: "ball", ipa: "/bɔːl/", zh: "球", s: "The ball is under the chair.", sc: "球在椅子下面。" },
+        { en: "behind", ipa: "/bɪˈhaɪnd/", zh: "在……后面", s: "The cat is behind the door.", sc: "猫在门后面。" },
+        { en: "front", ipa: "/frʌnt/", zh: "前面", s: "The teacher is at the front of the classroom.", sc: "老师在教室的前面。" },
+        { en: "of", ipa: "/ɒv/", zh: "（用于指某物与某地或某物之间的位置关系）", s: "This is a picture of my family.", sc: "这是一张我家人的照片。" },
+        { en: "in front of", ipa: "/ɪn ˈfrʌnt ɒv/", zh: "在……前面", s: "There is a tree in front of our school.", sc: "我们学校前面有一棵树。" },
+        { en: "beside", ipa: "/bɪˈsaɪd/", zh: "在……旁边", s: "The ball is beside the box.", sc: "球在盒子旁边。" },
+        { en: "under", ipa: "/ˈʌndə/", zh: "在……下面", s: "The shoes are under the bed.", sc: "鞋子在床下面。" },
+        { en: "now", ipa: "/naʊ/", zh: "现在", s: "Class begins now.", sc: "现在开始上课。" },
+        { en: "class", ipa: "/klɑːs/", zh: "班，班级", s: "There are forty kids in our class.", sc: "我们班有四十个孩子。" },
+        { en: "wow", ipa: "/waʊ/", zh: "哇，呀", s: "Wow, what a big cake!", sc: "哇，好大的蛋糕呀！" },
+        { en: "next", ipa: "/nekst/", zh: "紧接着来；随后", s: "What's next?", sc: "接下来是什么？" },
+        { en: "keep", ipa: "/kiːp/", zh: "饲养", s: "We keep a little dog at home.", sc: "我们在家养了一只小狗。" },
+        { en: "with", ipa: "/wɪð/", zh: "和……一起", s: "I play with my friends.", sc: "我和朋友们一起玩。" },
+        { en: "over", ipa: "/ˈəʊvə/", zh: "结束", s: "School is over at four.", sc: "学校四点放学。" },
+        { en: "clean", ipa: "/kliːn/", zh: "（使）清洁，清理", s: "Let's clean the classroom.", sc: "我们把教室打扫干净吧。" },
+        { en: "sweep", ipa: "/swiːp/", zh: "打扫，清拖", s: "Sweep the floor, please.", sc: "请扫扫地。" },
+        { en: "put", ipa: "/pʊt/", zh: "放，放置", s: "Put the book on the desk.", sc: "把书放在桌子上。" },
+        { en: "tomorrow", ipa: "/təˈmɒrəʊ/", zh: "明天", s: "See you tomorrow.", sc: "明天见。" },
+        { en: "they", ipa: "/ðeɪ/", zh: "他们；她们；它们", s: "They are my good friends.", sc: "他们是我的好朋友。" }
+      ]
+    },
+    {
+      name: "Unit 6 Meet my family",
+      words: [
+        { en: "family", ipa: "/ˈfæməli/", zh: "家，家庭", s: "There are four people in my family.", sc: "我家有四口人。" },
+        { en: "brother", ipa: "/ˈbrʌðə/", zh: "哥哥；弟弟", s: "My brother is a student.", sc: "我哥哥是学生。" },
+        { en: "sister", ipa: "/ˈsɪstə/", zh: "姐姐；妹妹", s: "My sister likes singing.", sc: "我姐姐喜欢唱歌。" },
+        { en: "grandpa", ipa: "/ˈɡrænpɑː/", zh: "爷爷；外公", s: "My grandpa tells me stories.", sc: "我爷爷给我讲故事。" },
+        { en: "grandma", ipa: "/ˈɡrænmɑː/", zh: "奶奶；外婆", s: "Grandma makes nice cakes.", sc: "奶奶做的蛋糕很好吃。" },
+        { en: "some", ipa: "/sʌm/", zh: "一些", s: "I want some water.", sc: "我想要一些水。" },
+        { en: "tea", ipa: "/tiː/", zh: "茶", s: "Would you like some tea?", sc: "你想喝点茶吗？" },
+        { en: "uncle", ipa: "/ˈʌŋkl/", zh: "叔叔；伯伯；舅舅；姑父；姨父", s: "My uncle is a driver.", sc: "我叔叔是司机。" },
+        { en: "aunt", ipa: "/ɑːnt/", zh: "阿姨；姑妈；伯母；舅妈；姨妈", s: "My aunt is a nurse.", sc: "我姑姑是护士。" },
+        { en: "long", ipa: "/lɒŋ/", zh: "长时间的", s: "We have a long holiday in summer.", sc: "我们夏天有一个长长的假期。" },
+        { en: "time", ipa: "/taɪm/", zh: "时间", s: "What time is it?", sc: "现在几点了？" },
+        { en: "sport", ipa: "/spɔːt/", zh: "体育运动", s: "My favourite sport is football.", sc: "我最喜欢的运动是足球。" },
+        { en: "day", ipa: "/deɪ/", zh: "一天", s: "What a nice day!", sc: "多好的一天呀！" },
+        { en: "sports day", ipa: "/ˈspɔːts deɪ/", zh: "运动日", s: "Today is our sports day.", sc: "今天是我们的运动日。" },
+        { en: "their", ipa: "/ðeə/", zh: "他们的", s: "That is their new classroom.", sc: "那是他们的新教室。" },
+        { en: "dog", ipa: "/dɒɡ/", zh: "狗", s: "The little dog is cute.", sc: "这只小狗很可爱。" },
+        { en: "win", ipa: "/wɪn/", zh: "获胜，赢", s: "I hope we win the game.", sc: "我希望我们赢得比赛。" },
+        { en: "best", ipa: "/best/", zh: "最好的", s: "You are my best friend.", sc: "你是我最好的朋友。" },
+        { en: "job", ipa: "/dʒɒb/", zh: "工作，任务", s: "Good job, everyone!", sc: "大家干得真不错！" },
+        { en: "good job", ipa: "/ɡʊd ˈdʒɒb/", zh: "干得好，真不错", s: "You finished it. Good job!", sc: "你完成了，干得好！" },
+        { en: "all right", ipa: "/ˌɔːl ˈraɪt/", zh: "没有问题的，没事的", s: "Are you all right?", sc: "你还好吗？" },
+        { en: "well", ipa: "/wel/", zh: "令人满意地", s: "She sings very well.", sc: "她唱歌唱得很好。" },
+        { en: "well done", ipa: "/ˌwel ˈdʌn/", zh: "干得好，真棒", s: "Well done, kids!", sc: "孩子们，干得真棒！" },
+        { en: "he", ipa: "/hiː/", zh: "他", s: "He is my father.", sc: "他是我的爸爸。" },
+        { en: "she", ipa: "/ʃiː/", zh: "她", s: "She is my mother.", sc: "她是我的妈妈。" },
+        { en: "grandfather", ipa: "/ˈɡrænfɑːðə/", zh: "祖父；外祖父", s: "My grandfather is seventy years old.", sc: "我爷爷七十岁了。" },
+        { en: "mother", ipa: "/ˈmʌðə/", zh: "母亲", s: "My mother is a teacher.", sc: "我妈妈是老师。" },
+        { en: "grandmother", ipa: "/ˈɡrænmʌðə/", zh: "祖母；外祖母", s: "My grandmother lives with us.", sc: "我奶奶和我们住在一起。" },
+        { en: "father", ipa: "/ˈfɑːðə/", zh: "父亲", s: "My father is tall.", sc: "我爸爸个子很高。" },
+        { en: "who", ipa: "/huː/", zh: "谁", s: "Who is that girl?", sc: "那个女孩是谁？" },
+        { en: "cousin", ipa: "/ˈkʌzn/", zh: "堂（表）兄弟；堂（表）姐妹", s: "My cousin and I play together.", sc: "我和表哥一起玩。" },
+        { en: "her", ipa: "/hɜː/", zh: "她的", s: "This is her book.", sc: "这是她的书。" }
+      ]
+    },
+    {
+      name: "Plays",
+      words: [
+        { en: "magic", ipa: "/ˈmædʒɪk/", zh: "神奇的", s: "The old man has a magic paintbrush.", sc: "老人有一支神奇的画笔。" },
+        { en: "paintbrush", ipa: "/ˈpeɪntbrʌʃ/", zh: "画笔", s: "I draw with my paintbrush.", sc: "我用画笔画画。" },
+        { en: "like", ipa: "/laɪk/", zh: "喜欢", s: "I like reading stories.", sc: "我喜欢读故事。" },
+        { en: "man", ipa: "/mæn/", zh: "人", s: "The old man is very kind.", sc: "这位老人非常善良。" },
+        { en: "boy", ipa: "/bɔɪ/", zh: "男孩", s: "The boy is Ma Liang.", sc: "这个男孩是马良。" },
+        { en: "here", ipa: "/hɪə/", zh: "在这里", s: "Come here, please.", sc: "请过来。" },
+        { en: "here you are", ipa: "/hɪə juː ˈɑː/", zh: "给你", s: "Here you are.", sc: "给你。" },
+        { en: "fly", ipa: "/flaɪ/", zh: "飞翔", s: "Birds fly in the sky.", sc: "鸟儿在天上飞。" },
+        { en: "run", ipa: "/rʌn/", zh: "奔跑", s: "The boy can run fast.", sc: "这个男孩跑得很快。" },
+        { en: "girl", ipa: "/ɡɜːl/", zh: "女孩", s: "The girl has long hair.", sc: "这个女孩留着长发。" },
+        { en: "hungry", ipa: "/ˈhʌŋɡri/", zh: "饥饿的", s: "I am hungry. I want some noodles.", sc: "我饿了，我想吃面条。" },
+        { en: "noodles", ipa: "/ˈnuːdlz/", zh: "（一般用复数）面条", s: "The noodles are delicious.", sc: "这面条很好吃。" },
+        { en: "cold", ipa: "/kəʊld/", zh: "冷的，寒冷的", s: "It's cold today.", sc: "今天很冷。" },
+        { en: "coat", ipa: "/kəʊt/", zh: "大衣，外套", s: "Put on your coat.", sc: "穿上你的外套。" },
+        { en: "emperor", ipa: "/ˈempərə/", zh: "皇帝", s: "The emperor wants the magic paintbrush.", sc: "皇帝想要那支神奇的画笔。" },
+        { en: "hear", ipa: "/hɪə/", zh: "得知", s: "I'm glad to hear that.", sc: "听到这个消息我很高兴。" },
+        { en: "want", ipa: "/wɒnt/", zh: "想要", s: "I want a new schoolbag.", sc: "我想要一个新书包。" },
+        { en: "money", ipa: "/ˈmʌni/", zh: "钱", s: "He has a lot of money.", sc: "他有很多钱。" },
+        { en: "tree", ipa: "/triː/", zh: "树木", s: "There is a big tree in the park.", sc: "公园里有一棵大树。" },
+        { en: "island", ipa: "/ˈaɪlənd/", zh: "岛屿", s: "They live on a small island.", sc: "他们住在一座小岛上。" },
+        { en: "sea", ipa: "/siː/", zh: "海洋", s: "The sea is very big.", sc: "大海非常大。" },
+        { en: "ship", ipa: "/ʃɪp/", zh: "大船", s: "The ship is on the sea.", sc: "大船在海上。" },
+        { en: "wind", ipa: "/wɪnd/", zh: "风", s: "The wind is strong today.", sc: "今天风很大。" },
+        { en: "more", ipa: "/mɔː/", zh: "更多的", s: "I want more apples.", sc: "我想要更多的苹果。" },
+        { en: "fall", ipa: "/fɔːl/", zh: "跌落", s: "The leaves fall in autumn.", sc: "秋天树叶落下来。" },
+        { en: "into", ipa: "/ˈɪntuː/", zh: "到……里面", s: "He jumps into the water.", sc: "他跳进水里。" },
+        { en: "after", ipa: "/ˈɑːftə/", zh: "在……后", s: "Let's play after class.", sc: "我们下课后玩吧。" },
+        { en: "use", ipa: "/juːz/", zh: "用，使用", s: "May I use your ruler?", sc: "我可以用一下你的尺子吗？" },
+        { en: "his", ipa: "/hɪz/", zh: "他的", s: "This is his coat.", sc: "这是他的外套。" },
+        { en: "people", ipa: "/ˈpiːpl/", zh: "人，人们", s: "Many people like this story.", sc: "很多人喜欢这个故事。" },
+        { en: "give", ipa: "/ɡɪv/", zh: "递给", s: "Please give me the book.", sc: "请把书递给我。" },
+        { en: "pear", ipa: "/peə/", zh: "梨", s: "The pear is sweet and juicy.", sc: "这个梨又甜又多汁。" },
+        { en: "year", ipa: "/jɪə/", zh: "岁", s: "My sister is six years old.", sc: "我妹妹六岁了。" },
+        { en: "big", ipa: "/bɪɡ/", zh: "年长的", s: "My big brother is in Grade Five.", sc: "我哥哥上五年级。" },
+        { en: "welcome", ipa: "/ˈwelkəm/", zh: "欢迎", s: "Welcome to our school.", sc: "欢迎来到我们学校。" },
+        { en: "juicy", ipa: "/ˈdʒuːsi/", zh: "多汁的", s: "The watermelon is big and juicy.", sc: "这个西瓜又大又多汁。" },
+        { en: "sweet", ipa: "/swiːt/", zh: "甜的", s: "The candy is very sweet.", sc: "这个糖果非常甜。" },
+        { en: "beautiful", ipa: "/ˈbjuːtɪfl/", zh: "极好的", s: "What a beautiful day!", sc: "多么美好的一天呀！" },
+        { en: "small", ipa: "/smɔːl/", zh: "小的", s: "The mouse is small.", sc: "老鼠很小。" },
+        { en: "eat", ipa: "/iːt/", zh: "吃", s: "Let's eat some fruit.", sc: "我们吃点水果吧。" },
+        { en: "very", ipa: "/ˈveri/", zh: "很，非常", s: "Thank you very much.", sc: "非常感谢。" },
+        { en: "kind", ipa: "/kaɪnd/", zh: "体贴的", s: "She is kind to her friends.", sc: "她对朋友很体贴。" }
+      ]
+    },
+  ]
+};
+
+/* ==== book-g3-2.js ==== */
+window.BOOK_G3_2 = {
+  id: "g3-2",
+  name: "三年级下册",
+  version: "外研版 Join In · 三年级下册（2025春版）",
+  units: [
+    {
+      name: "Unit 1 All about feelings",
+      words: [
+        { en: "feeling", ipa: "/ˈfiːlɪŋ/", zh: "感觉", s: "I know that feeling very well.", sc: "我很了解那种感觉。" },
+        { en: "tired", ipa: "/ˈtaɪəd/", zh: "疲惫的", s: "I am tired after the big game.", sc: "比赛之后我很累。" },
+        { en: "sad", ipa: "/sæd/", zh: "难过的", s: "Why are you so sad today?", sc: "你今天为什么这么难过？" },
+        { en: "angry", ipa: "/ˈæŋɡri/", zh: "生气的", s: "Please do not be angry with me.", sc: "请不要生我的气。" },
+        { en: "scared", ipa: "/skeəd/", zh: "害怕的", s: "Are you scared of the dark?", sc: "你怕黑吗？" },
+        { en: "cry", ipa: "/kraɪ/", zh: "哭", s: "Please do not cry. I am here.", sc: "别哭，我在这里。" },
+        { en: "laugh", ipa: "/lɑːf/", zh: "笑", s: "This funny story makes me laugh.", sc: "这个有趣的故事让我笑了。" },
+        { en: "stamp", ipa: "/stæmp/", zh: "跺（脚）", s: "Stamp your feet to the music.", sc: "跟着音乐跺跺脚。" },
+        { en: "sleep", ipa: "/sliːp/", zh: "睡觉", s: "I sleep at nine every night.", sc: "我每晚九点睡觉。" },
+        { en: "new", ipa: "/njuː/", zh: "新的", s: "Look at my new pencil case.", sc: "看我的新铅笔盒。" },
+        { en: "game", ipa: "/ɡeɪm/", zh: "游戏", s: "Let us play a fun game.", sc: "我们玩个有趣的游戏吧。" },
+        { en: "excited", ipa: "/ɪkˈsaɪtɪd/", zh: "兴奋的", s: "I am excited about the school trip.", sc: "我对这次出行感到很兴奋。" },
+        { en: "sorry", ipa: "/ˈsɒri/", zh: "对不起", s: "I am sorry. I am late.", sc: "对不起，我迟到了。" },
+        { en: "like", ipa: "/laɪk/", zh: "喜欢；像", s: "This little dog is like my friend.", sc: "这只小狗就像我的朋友。" },
+        { en: "but", ipa: "/bʌt/", zh: "但是", s: "I am tired but very happy.", sc: "我很累，但是很开心。" },
+        { en: "unhappy", ipa: "/ʌnˈhæpi/", zh: "不开心的", s: "You look unhappy. Are you all right?", sc: "你看起来不开心，还好吗？" },
+        { en: "worried", ipa: "/ˈwʌrid/", zh: "担心的", s: "Do not be worried about the test.", sc: "不要为考试担心。" },
+        { en: "not", ipa: "/nɒt/", zh: "不，不是", s: "The answer is right, not wrong.", sc: "这个答案是对的，不是错的。" },
+        { en: "lose", ipa: "/luːz/", zh: "丢失", s: "Please do not lose your new pen.", sc: "请不要把你的新钢笔弄丢了。" },
+        { en: "doll", ipa: "/dɒl/", zh: "玩偶", s: "My doll has long black hair.", sc: "我的玩偶有黑色的长头发。" },
+        { en: "football", ipa: "/ˈfʊtbɔːl/", zh: "足球", s: "Let us play football in the park.", sc: "我们去公园踢足球吧。" },
+        { en: "candy", ipa: "/ˈkændi/", zh: "糖果", s: "Too much candy is not good for you.", sc: "吃太多糖果对你不好。" },
+        { en: "away", ipa: "/əˈweɪ/", zh: "移走", s: "Please put your toys away now.", sc: "请把你的玩具收起来。" },
+        { en: "take sb / sth away", ipa: "/teɪk ... əˈweɪ/", zh: "带走，拿走", s: "Please take the old books away.", sc: "请把旧书拿走。" },
+        { en: "big", ipa: "/bɪɡ/", zh: "大的", s: "This is a big blue box.", sc: "这是一个蓝色的大盒子。" },
+        { en: "mouse", ipa: "/maʊs/", zh: "老鼠", s: "A little mouse is in that box.", sc: "一只小老鼠在那个盒子里。" }
+      ]
+    },
+    {
+      name: "Unit 2 From head to toe",
+      words: [
+        { en: "from", ipa: "/frɒm/", zh: "从", s: "We count from one to ten.", sc: "我们从一数到十。" },
+        { en: "head", ipa: "/hed/", zh: "头", s: "Put your hands on your head.", sc: "把你的手放在头上。" },
+        { en: "toe", ipa: "/təʊ/", zh: "脚趾", s: "Touch your toes with your hands.", sc: "用手去摸你的脚趾。" },
+        { en: "body", ipa: "/ˈbɒdi/", zh: "身体；躯干", s: "Move your body to the music.", sc: "随着音乐摆动你的身体。" },
+        { en: "rock", ipa: "/rɒk/", zh: "摇滚乐", s: "We dance to rock music at home.", sc: "我们在家跟着摇滚乐跳舞。" },
+        { en: "song", ipa: "/sɒŋ/", zh: "歌曲", s: "This English song is easy to learn.", sc: "这首英文歌很容易学。" },
+        { en: "touch", ipa: "/tʌtʃ/", zh: "触摸", s: "Touch your nose with one hand.", sc: "用一只手摸你的鼻子。" },
+        { en: "eye", ipa: "/aɪ/", zh: "眼睛", s: "Close your eyes and listen to me.", sc: "闭上眼睛听我说。" },
+        { en: "hair", ipa: "/heə/", zh: "头发", s: "My little sister has long hair.", sc: "我妹妹有长长的头发。" },
+        { en: "ear", ipa: "/ɪə/", zh: "耳朵", s: "The rabbit has two long ears.", sc: "这只兔子有两只长耳朵。" },
+        { en: "wave", ipa: "/weɪv/", zh: "摇动", s: "Wave your hands and say hello.", sc: "挥挥手打个招呼。" },
+        { en: "leg", ipa: "/leg/", zh: "腿", s: "My legs are tired after the race.", sc: "比赛后我的腿很累。" },
+        { en: "foot", ipa: "/fʊt/", zh: "脚", s: "My left foot hurts a little.", sc: "我的左脚有点疼。" },
+        { en: "nose", ipa: "/nəʊz/", zh: "鼻子", s: "The elephant has a very long nose.", sc: "大象有一个很长的鼻子。" },
+        { en: "face", ipa: "/feɪs/", zh: "脸", s: "Please wash your face before breakfast.", sc: "早饭前请把脸洗干净。" },
+        { en: "arm", ipa: "/ɑːm/", zh: "手臂", s: "Put up your right arm, please.", sc: "请举起你的右臂。" },
+        { en: "hand", ipa: "/hænd/", zh: "手", s: "Clap your hands and sing with me.", sc: "拍拍手，和我一起唱。" },
+        { en: "mouth", ipa: "/maʊθ/", zh: "嘴", s: "Open your mouth and say it again.", sc: "张开嘴，再说一遍。" },
+        { en: "tooth", ipa: "/tuːθ/", zh: "牙", s: "This tooth hurts. I must see a doctor.", sc: "这颗牙疼，我得去看医生。" },
+        { en: "prize", ipa: "/praɪz/", zh: "奖品", s: "Who wants this prize? Put up your hand.", sc: "谁想要这个奖品？请举手。" },
+        { en: "bike", ipa: "/baɪk/", zh: "自行车", s: "I ride my bike to school every day.", sc: "我每天骑自行车去上学。" },
+        { en: "race", ipa: "/reɪs/", zh: "竞赛", s: "Come and watch the bike race.", sc: "来看这场自行车比赛吧。" },
+        { en: "stretch", ipa: "/stretʃ/", zh: "伸展", s: "Stretch your arms up to the sky.", sc: "把手臂向上伸展。" },
+        { en: "shake", ipa: "/ʃeɪk/", zh: "摇动", s: "Shake your head if you do not know.", sc: "如果不知道就摇摇头。" },
+        { en: "here", ipa: "/hɪə/", zh: "在这里", s: "Put your bag here, by the door.", sc: "把你的包放在这里，门旁边。" },
+        { en: "Mr", ipa: "/ˈmɪstə/", zh: "先生", s: "Mr Li is our new PE teacher.", sc: "李先生是我们的新体育老师。" },
+        { en: "back", ipa: "/bæk/", zh: "回到原处", s: "Give the ball back to me, please.", sc: "请把球还给我。" },
+        { en: "worry", ipa: "/ˈwʌri/", zh: "担心", s: "Do not worry about the small dog.", sc: "别为那只小狗担心。" },
+        { en: "first aid kit", ipa: "/ˌfɜːst ˈeɪd kɪt/", zh: "急救包", s: "Where is the first aid kit?", sc: "急救包在哪里？" },
+        { en: "tip", ipa: "/tɪp/", zh: "建议", s: "Here is a good tip for you.", sc: "这里有一条好建议给你。" },
+        { en: "small", ipa: "/smɔːl/", zh: "小的", s: "My cat is very small and cute.", sc: "我的猫很小也很可爱。" },
+        { en: "robot", ipa: "/ˈrəʊbɒt/", zh: "机器人", s: "The robot can walk and talk.", sc: "这个机器人会走路和说话。" },
+        { en: "his", ipa: "/hɪz/", zh: "他的", s: "His eyes are big and very blue.", sc: "他的眼睛又大又蓝。" }
+      ]
+    },
+    {
+      name: "Unit 3 Looking good!",
+      words: [
+        { en: "so", ipa: "/səʊ/", zh: "这么；如此", s: "Your new shoes are so cool.", sc: "你的新鞋真酷。" },
+        { en: "cool", ipa: "/kuːl/", zh: "酷的", s: "You look cool in that black cap.", sc: "你戴那顶黑帽子看起来很酷。" },
+        { en: "clothes", ipa: "/kləʊðz/", zh: "衣服", s: "These clothes are clean and warm.", sc: "这些衣服干净又暖和。" },
+        { en: "wear", ipa: "/weə/", zh: "穿", s: "I wear a coat on cold days.", sc: "天冷的时候我穿外套。" },
+        { en: "cap", ipa: "/kæp/", zh: "（有帽舌的）帽子", s: "Look at my cap. It is red.", sc: "看我的帽子，它是红色的。" },
+        { en: "T-shirt", ipa: "/ˈtiː ʃɜːt/", zh: "T恤", s: "My T-shirt has a panda on it.", sc: "我的T恤上有一只熊猫。" },
+        { en: "trousers", ipa: "/ˈtraʊzəz/", zh: "裤子", s: "His trousers are too long for him.", sc: "他的裤子对他来说太长了。" },
+        { en: "sock", ipa: "/sɒk/", zh: "袜子", s: "Where is my other blue sock?", sc: "我的另一只蓝袜子在哪里？" },
+        { en: "shiny", ipa: "/ˈʃaɪni/", zh: "有光泽的", s: "I like these shiny new shoes.", sc: "我喜欢这双闪亮的新鞋。" },
+        { en: "shoe", ipa: "/ʃuː/", zh: "鞋", s: "Please put on your new shoes.", sc: "请穿上你的新鞋。" },
+        { en: "dress", ipa: "/dres/", zh: "连衣裙", s: "Mum, can I wear the pink dress?", sc: "妈妈，我可以穿那条粉色的连衣裙吗？" },
+        { en: "sweater", ipa: "/ˈswetə/", zh: "毛线衣", s: "My grandma made this sweater for me.", sc: "这件毛衣是我奶奶给我织的。" },
+        { en: "skirt", ipa: "/skɜːt/", zh: "半身裙", s: "This skirt goes with your shirt.", sc: "这条裙子和你的衬衫很配。" },
+        { en: "shirt", ipa: "/ʃɜːt/", zh: "衬衫", s: "Try this white shirt on, please.", sc: "请试穿一下这件白衬衫。" },
+        { en: "coat", ipa: "/kəʊt/", zh: "外套", s: "Take off your coat in the classroom.", sc: "在教室里把外套脱下来。" },
+        { en: "shorts", ipa: "/ʃɔːts/", zh: "短裤", s: "He wears shorts in hot summer.", sc: "夏天热的时候他穿短裤。" },
+        { en: "king", ipa: "/kɪŋ/", zh: "国王", s: "The king has many beautiful coats.", sc: "国王有很多漂亮的外套。" },
+        { en: "want", ipa: "/wɒnt/", zh: "想要", s: "I want a new cap for summer.", sc: "夏天我想要一顶新帽子。" },
+        { en: "beautiful", ipa: "/ˈbjuːtɪfl/", zh: "美丽的", s: "What a beautiful dress that is!", sc: "那是一件多么漂亮的连衣裙啊！" },
+        { en: "make", ipa: "/meɪk/", zh: "做", s: "Can you make clothes for the doll?", sc: "你能给玩偶做衣服吗？" },
+        { en: "magic", ipa: "/ˈmædʒɪk/", zh: "神奇的", s: "This is a magic hat for the king.", sc: "这是给国王的一顶神奇的帽子。" },
+        { en: "clever", ipa: "/ˈklevə/", zh: "聪明的", s: "What a clever fox he is!", sc: "他是一只多么聪明的狐狸啊！" },
+        { en: "them", ipa: "/ðem/", zh: "它们", s: "Look at these shoes. Do you like them?", sc: "看这些鞋，你喜欢它们吗？" },
+        { en: "month", ipa: "/mʌnθ/", zh: "一个月；月", s: "I wait a month for the new coat.", sc: "我等了一个月才等到那件新外套。" },
+        { en: "later", ipa: "/ˈleɪtə/", zh: "之后", s: "See you later. Try the coat on.", sc: "回头见，把那件外套试穿一下。" },
+        { en: "try", ipa: "/traɪ/", zh: "试", s: "Please try this black cap, Sam.", sc: "萨姆，请试试这顶黑帽子。" },
+        { en: "try sth on", ipa: "/traɪ ... ɒn/", zh: "试穿", s: "Try the sweater on before you buy it.", sc: "买之前把那件毛衣试穿一下。" },
+        { en: "why", ipa: "/waɪ/", zh: "为什么", s: "Why do you wear a coat today?", sc: "你今天为什么穿外套？" },
+        { en: "wonderful", ipa: "/ˈwʌndəfl/", zh: "令人惊叹的", s: "The school show is wonderful tonight.", sc: "今晚的学校演出非常精彩。" },
+        { en: "most", ipa: "/məʊst/", zh: "最", s: "This dress is the most beautiful.", sc: "这条连衣裙是最漂亮的。" },
+        { en: "any", ipa: "/ˈeni/", zh: "任何的", s: "Do you have any small shoes?", sc: "你们有小一点的鞋吗？" },
+        { en: "or", ipa: "/ɔː/", zh: "或", s: "Do you want the blue one or the red one?", sc: "你想要蓝色的还是红色的？" },
+        { en: "fox", ipa: "/fɒks/", zh: "狐狸", s: "The fox has a big warm tail.", sc: "狐狸有一条又大又暖的尾巴。" },
+        { en: "monkey", ipa: "/ˈmʌŋki/", zh: "猴子", s: "The little monkey can wear a hat.", sc: "这只小猴子会戴帽子。" },
+        { en: "tell", ipa: "/tel/", zh: "告诉；说出", s: "Please tell me your favourite colour.", sc: "请告诉我你最喜欢的颜色。" },
+        { en: "truth", ipa: "/truːθ/", zh: "真相", s: "Please tell me the truth about it.", sc: "请把这件事的真相告诉我。" },
+        { en: "wash", ipa: "/wɒʃ/", zh: "洗", s: "I wash my red socks on Sunday.", sc: "我星期日洗我的红袜子。" },
+        { en: "hang", ipa: "/hæŋ/", zh: "悬挂", s: "Hang your coat behind the door.", sc: "把你的外套挂在门后面。" },
+        { en: "hat", ipa: "/hæt/", zh: "帽子", s: "Put a warm hat on before you go.", sc: "出门前戴上一顶暖和的帽子。" },
+        { en: "jeans", ipa: "/dʒiːnz/", zh: "牛仔裤", s: "My jeans are old but very cool.", sc: "我的牛仔裤旧了，但很酷。" },
+        { en: "boot", ipa: "/buːt/", zh: "靴子", s: "These boots keep my feet dry.", sc: "这双靴子让我的脚保持干爽。" },
+        { en: "robe", ipa: "/rəʊb/", zh: "长袍", s: "The king has a long gold robe.", sc: "国王有一件金色的长袍。" }
+      ]
+    },
+    {
+      name: "Unit 4 Rain or shine",
+      words: [
+        { en: "rain", ipa: "/reɪn/", zh: "雨", s: "I like walking in the rain.", sc: "我喜欢在雨中散步。" },
+        { en: "shine", ipa: "/ʃaɪn/", zh: "光亮", s: "The sun gives us light and shine.", sc: "太阳给我们光和热。" },
+        { en: "rainy", ipa: "/ˈreɪni/", zh: "多雨的", s: "Take an umbrella on rainy days.", sc: "下雨天要带上雨伞。" },
+        { en: "run", ipa: "/rʌn/", zh: "跑", s: "We run home before the rain.", sc: "下雨前我们跑回家。" },
+        { en: "windy", ipa: "/ˈwɪndi/", zh: "多风的", s: "Let us fly a kite on windy days.", sc: "风大的时候我们去放风筝吧。" },
+        { en: "fly", ipa: "/flaɪ/", zh: "放飞", s: "Can you fly a kite with me?", sc: "你能和我一起去放风筝吗？" },
+        { en: "kite", ipa: "/kaɪt/", zh: "风筝", s: "My kite is high up in the sky.", sc: "我的风筝高高飞在天上。" },
+        { en: "park", ipa: "/pɑːk/", zh: "公园", s: "We play in the park after school.", sc: "放学后我们在公园里玩。" },
+        { en: "hot", ipa: "/hɒt/", zh: "炎热的", s: "It is very hot here today.", sc: "今天这里非常热。" },
+        { en: "sunny", ipa: "/ˈsʌni/", zh: "阳光充足的", s: "What a sunny day for the park!", sc: "多好的晴天，适合去公园！" },
+        { en: "swim", ipa: "/swɪm/", zh: "游泳", s: "We swim in summer with Dad.", sc: "夏天我们和爸爸一起去游泳。" },
+        { en: "water", ipa: "/ˈwɔːtə/", zh: "水", s: "Please give me some cold water.", sc: "请给我一些凉水。" },
+        { en: "cold", ipa: "/kəʊld/", zh: "寒冷的", s: "It is cold here in winter.", sc: "这里冬天很冷。" },
+        { en: "snowy", ipa: "/ˈsnəʊi/", zh: "多雪的", s: "We stay at home on snowy days.", sc: "下雪天我们待在家里。" },
+        { en: "throw", ipa: "/θrəʊ/", zh: "投；扔", s: "Throw the ball to your friend.", sc: "把球扔给你的朋友。" },
+        { en: "snowball", ipa: "/ˈsnəʊbɔːl/", zh: "雪球", s: "We make a big snowball together.", sc: "我们一起滚了个大雪球。" },
+        { en: "raincoat", ipa: "/ˈreɪnkəʊt/", zh: "雨衣", s: "Put on your raincoat before you go.", sc: "出门前穿上你的雨衣。" },
+        { en: "umbrella", ipa: "/ʌmˈbrelə/", zh: "雨伞", s: "Take this umbrella with you today.", sc: "今天你带着这把雨伞吧。" },
+        { en: "warm", ipa: "/wɔːm/", zh: "保暖的", s: "This coat is warm and very light.", sc: "这件外套暖和又轻便。" },
+        { en: "music", ipa: "/ˈmjuːzɪk/", zh: "音乐", s: "I listen to music on rainy days.", sc: "下雨天我听音乐。" },
+        { en: "weather", ipa: "/ˈweðə/", zh: "天气", s: "What is the weather like today?", sc: "今天天气怎么样？" },
+        { en: "bookshop", ipa: "/ˈbʊkʃɒp/", zh: "书店", s: "We wait in the bookshop when it rains.", sc: "下雨时我们在书店里等。" },
+        { en: "wait", ipa: "/weɪt/", zh: "等", s: "Please wait for me at the door.", sc: "请在门口等我。" },
+        { en: "wet", ipa: "/wet/", zh: "湿的", s: "My shoes are wet after the rain.", sc: "雨后我的鞋湿了。" },
+        { en: "again", ipa: "/əˈɡen/", zh: "又", s: "Here comes the rain again today.", sc: "今天又下雨了。" },
+        { en: "dry", ipa: "/draɪ/", zh: "干燥的", s: "My coat is dry now. Let us go.", sc: "我的外套干了，我们走吧。" },
+        { en: "sell", ipa: "/sel/", zh: "卖", s: "They sell umbrellas in that bookshop.", sc: "那家书店里卖雨伞。" },
+        { en: "these", ipa: "/ðiːz/", zh: "this 的复数形式", s: "These raincoats are new and warm.", sc: "这些雨衣又新又暖和。" },
+        { en: "idea", ipa: "/aɪˈdɪə/", zh: "主意", s: "That is a good idea for a rainy day.", sc: "下雨天这个主意不错。" },
+        { en: "club", ipa: "/klʌb/", zh: "俱乐部", s: "Welcome to our little weather club.", sc: "欢迎来到我们的小小气象俱乐部。" },
+        { en: "stay", ipa: "/steɪ/", zh: "停留", s: "We stay inside all day long.", sc: "我们整天待在家里。" },
+        { en: "stay away from", ipa: "/steɪ əˈweɪ frɒm/", zh: "远离", s: "Stay away from the water, please.", sc: "请远离水边。" },
+        { en: "stand", ipa: "/stænd/", zh: "站立", s: "Stand under the tree and wait.", sc: "站在树下等一等。" },
+        { en: "tree", ipa: "/triː/", zh: "树", s: "The big tree keeps the rain away.", sc: "大树把雨挡住了。" },
+        { en: "walk", ipa: "/wɔːk/", zh: "走", s: "Let us walk slowly in the park.", sc: "我们在公园里慢慢走走吧。" },
+        { en: "carefully", ipa: "/ˈkeəfəli/", zh: "小心地", s: "Walk carefully. The floor is wet.", sc: "小心地走，地板是湿的。" },
+        { en: "spring", ipa: "/sprɪŋ/", zh: "春天", s: "Spring is green and full of rain.", sc: "春天绿意盎然，雨水很多。" },
+        { en: "summer", ipa: "/ˈsʌmə/", zh: "夏天", s: "Summer here is hot and very long.", sc: "这里的夏天炎热又漫长。" },
+        { en: "autumn", ipa: "/ˈɔːtəm/", zh: "秋天", s: "The trees are yellow in autumn.", sc: "秋天树叶变黄了。" }
+      ]
+    },
+    {
+      name: "Unit 5 Days of the week",
+      words: [
+        { en: "winter", ipa: "/ˈwɪntə/", zh: "冬天", s: "Winter is cold. I stay at home.", sc: "冬天很冷，我待在家里。" },
+        { en: "season", ipa: "/ˈsiːzn/", zh: "季节", s: "Which season do you like best?", sc: "你最喜欢哪个季节？" },
+        { en: "step", ipa: "/step/", zh: "步骤", s: "The first step is to draw a tree.", sc: "第一步是画一棵树。" },
+        { en: "drawing", ipa: "/ˈdrɔːɪŋ/", zh: "图画", s: "This drawing is for my mum.", sc: "这幅画是送给我妈妈的。" },
+        { en: "cloudy", ipa: "/ˈklaʊdi/", zh: "多云的", s: "It is cloudy today, not rainy.", sc: "今天多云，没有下雨。" },
+        { en: "close", ipa: "/kləʊz/", zh: "关，闭合", s: "Close the window before you leave.", sc: "离开前把窗户关好。" },
+        { en: "much", ipa: "/mʌtʃ/", zh: "非常", s: "Thank you very much for your help.", sc: "非常感谢你的帮助。" },
+        { en: "of course", ipa: "/əv ˈkɔːs/", zh: "当然", s: "Of course you can play with me.", sc: "当然你可以和我一起玩。" },
+        { en: "rabbit", ipa: "/ˈræbɪt/", zh: "兔", s: "The white rabbit is so lovely.", sc: "这只白兔真可爱。" },
+        { en: "cat", ipa: "/kæt/", zh: "猫", s: "My cat sleeps on my bed.", sc: "我的猫睡在我的床上。" },
+        { en: "fish", ipa: "/fɪʃ/", zh: "鱼", s: "Look at the little fish in the water.", sc: "看水里的那条小鱼。" },
+        { en: "busy", ipa: "/ˈbɪzi/", zh: "忙碌的", s: "My dad is busy every day.", sc: "我爸爸每天都很忙。" },
+        { en: "every", ipa: "/ˈevri/", zh: "每一个", s: "I read English every morning at home.", sc: "我每天早上在家读英语。" },
+        { en: "cook", ipa: "/kʊk/", zh: "烹调", s: "Mum can cook fish very well.", sc: "妈妈做鱼做得很好。" },
+        { en: "study", ipa: "/ˈstʌdi/", zh: "学习", s: "We study English together after school.", sc: "放学后我们一起学英语。" },
+        { en: "basketball", ipa: "/ˈbɑːskɪtbɔːl/", zh: "篮球", s: "They play basketball in the park.", sc: "他们在公园里打篮球。" },
+        { en: "week", ipa: "/wiːk/", zh: "星期", s: "There are seven days in a week.", sc: "一个星期有七天。" },
+        { en: "Monday", ipa: "/ˈmʌndeɪ/", zh: "星期一", s: "We have English on Monday morning.", sc: "我们星期一上午有英语课。" },
+        { en: "Tuesday", ipa: "/ˈtjuːzdeɪ/", zh: "星期二", s: "I play basketball with friends on Tuesday.", sc: "我星期二和朋友们打篮球。" },
+        { en: "Wednesday", ipa: "/ˈwenzdeɪ/", zh: "星期三", s: "See you on Wednesday after school.", sc: "星期三放学后见。" },
+        { en: "Thursday", ipa: "/ˈθɜːzdeɪ/", zh: "星期四", s: "Thursday is my favourite day at school.", sc: "星期四是我在学校最喜欢的一天。" },
+        { en: "Friday", ipa: "/ˈfraɪdeɪ/", zh: "星期五", s: "We have a class party on Friday.", sc: "我们星期五有班级聚会。" },
+        { en: "Saturday", ipa: "/ˈsætədeɪ/", zh: "星期六", s: "Do you go to the park on Saturday?", sc: "你星期六去公园吗？" },
+        { en: "Sunday", ipa: "/ˈsʌndeɪ/", zh: "星期日", s: "I visit my grandma on Sunday.", sc: "我星期日去看望奶奶。" },
+        { en: "before", ipa: "/bɪˈfɔː/", zh: "在……以前", s: "Please wash your hands before dinner.", sc: "饭前请洗手。" },
+        { en: "after", ipa: "/ˈɑːftə/", zh: "在……以后", s: "We go home together after school.", sc: "放学后我们一起回家。" },
+        { en: "room", ipa: "/ruːm/", zh: "房间", s: "My room is small but very tidy.", sc: "我的房间小，但是很整洁。" }
+      ]
+    },
+    {
+      name: "Unit 6 Time to eat!",
+      words: [
+        { en: "eat", ipa: "/iːt/", zh: "吃", s: "Let us eat some fruit and bread.", sc: "我们吃点水果和面包吧。" },
+        { en: "apple", ipa: "/ˈæpl/", zh: "苹果", s: "I eat an apple after dinner.", sc: "我饭后吃一个苹果。" },
+        { en: "egg", ipa: "/eɡ/", zh: "鸡蛋", s: "Mum cooks an egg for me.", sc: "妈妈给我煮了一个鸡蛋。" },
+        { en: "bread", ipa: "/bred/", zh: "面包", s: "Is there any bread for breakfast?", sc: "早饭有面包吗？" },
+        { en: "milk", ipa: "/mɪlk/", zh: "奶", s: "I drink a cup of milk every morning.", sc: "我每天早上喝一杯牛奶。" },
+        { en: "rice", ipa: "/raɪs/", zh: "米；米饭", s: "We have rice and meat for dinner.", sc: "我们晚饭吃米饭和肉。" },
+        { en: "tomato", ipa: "/təˈmɑːtəʊ/", zh: "西红柿", s: "These tomatoes are big and red.", sc: "这些西红柿又大又红。" },
+        { en: "juice", ipa: "/dʒuːs/", zh: "果汁", s: "Would you like some apple juice?", sc: "你想喝点苹果汁吗？" },
+        { en: "ice cream", ipa: "/ˌaɪs ˈkriːm/", zh: "冰激凌", s: "Ice cream is my favourite cold food.", sc: "冰激凌是我最喜欢的凉食。" },
+        { en: "chicken", ipa: "/ˈtʃɪkɪn/", zh: "鸡肉", s: "This chicken dish smells very good.", sc: "这道鸡肉闻起来很香。" },
+        { en: "noodle", ipa: "/ˈnuːdl/", zh: "面条", s: "I like noodles for my lunch.", sc: "我午饭喜欢吃面条。" },
+        { en: "banana", ipa: "/bəˈnɑːnə/", zh: "香蕉", s: "The banana is soft and sweet.", sc: "香蕉又软又甜。" },
+        { en: "finish", ipa: "/ˈfɪnɪʃ/", zh: "结束", s: "Please finish your rice before the soup.", sc: "请在喝汤前把米饭吃完。" },
+        { en: "dinner", ipa: "/ˈdɪnə/", zh: "正餐", s: "Dinner is ready. Come and eat.", sc: "晚饭做好了，来吃吧。" },
+        { en: "welcome", ipa: "/ˈwelkəm/", zh: "欢迎", s: "Welcome to our family dinner tonight.", sc: "欢迎你来吃我们家的晚饭。" },
+        { en: "parent", ipa: "/ˈpeərənt/", zh: "父，母", s: "My parents cook dinner together at home.", sc: "我父母在家一起做晚饭。" },
+        { en: "dish", ipa: "/dɪʃ/", zh: "一道菜", s: "This dish is made with eggs.", sc: "这道菜是用鸡蛋做的。" },
+        { en: "meat", ipa: "/miːt/", zh: "肉", s: "Do you want rice or meat?", sc: "你想要米饭还是肉？" },
+        { en: "really", ipa: "/ˈrɪəli/", zh: "真的", s: "This soup is really nice and hot.", sc: "这汤真的很香很热。" },
+        { en: "mushroom", ipa: "/ˈmʌʃrʊm/", zh: "蘑菇", s: "Put some mushrooms in the soup.", sc: "在汤里放些蘑菇吧。" },
+        { en: "potato", ipa: "/pəˈteɪtəʊ/", zh: "土豆", s: "I want two potatoes in my dish.", sc: "我的菜里想要两个土豆。" },
+        { en: "eggplant", ipa: "/ˈeɡplɑːnt/", zh: "茄子", s: "This purple eggplant looks very fresh.", sc: "这个紫茄子看起来很新鲜。" },
+        { en: "believe", ipa: "/bɪˈliːv/", zh: "相信", s: "I believe you can finish it.", sc: "我相信你能把它吃完。" },
+        { en: "Chinese", ipa: "/ˌtʃaɪˈniːz/", zh: "中国的", s: "Chinese food is amazing and healthy.", sc: "中国菜很棒，也很健康。" },
+        { en: "food", ipa: "/fuːd/", zh: "食物", s: "What is your favourite food for lunch?", sc: "你午饭最喜欢吃什么？" },
+        { en: "amazing", ipa: "/əˈmeɪzɪŋ/", zh: "惊人的", s: "The dinner smells amazing. Let us eat!", sc: "晚饭闻起来太香了，我们吃吧！" },
+        { en: "say", ipa: "/seɪ/", zh: "说", s: "Say thank you to Mum for dinner.", sc: "对妈妈说声谢谢她的晚饭。" },
+        { en: "tummy", ipa: "/ˈtʌmi/", zh: "肚子", s: "My tummy is full after dinner.", sc: "晚饭后我的肚子饱了。" },
+        { en: "yummy", ipa: "/ˈjʌmi/", zh: "很好吃的", s: "Yummy! This pizza is so good.", sc: "真好吃！这个比萨饼太棒了。" },
+        { en: "grape", ipa: "/ɡreɪp/", zh: "葡萄", s: "These grapes are small and sweet.", sc: "这些葡萄又小又甜。" },
+        { en: "vegetable", ipa: "/ˈvedʒtəbl/", zh: "蔬菜", s: "Eat some vegetables with your meat.", sc: "吃肉的时候也吃点蔬菜。" },
+        { en: "soup", ipa: "/suːp/", zh: "汤", s: "This tomato soup is very warm.", sc: "这碗西红柿汤很暖胃。" },
+        { en: "pizza", ipa: "/ˈpiːtsə/", zh: "比萨饼", s: "We make pizza together on Sunday.", sc: "我们星期日一起做比萨饼。" },
+        { en: "drink", ipa: "/drɪŋk/", zh: "饮料", s: "Would you like a cold drink?", sc: "你想喝杯冷饮吗？" },
+        { en: "dumpling", ipa: "/ˈdʌmplɪŋ/", zh: "水饺", s: "We eat dumplings at Chinese New Year.", sc: "我们在春节吃水饺。" },
+        { en: "need", ipa: "/niːd/", zh: "需要", s: "What do we need for dumplings?", sc: "包饺子我们需要什么？" },
+        { en: "wrapper", ipa: "/ˈræpə/", zh: "包装材料", s: "Put the meat on the wrapper.", sc: "把肉放在饺子皮上。" },
+        { en: "dumpling wrapper", ipa: "/ˈdʌmplɪŋ ˈræpə/", zh: "饺子皮", s: "Buy some dumpling wrappers for us.", sc: "给我们买些饺子皮吧。" },
+        { en: "mix", ipa: "/mɪks/", zh: "（使）混合", s: "Mix the carrots with the meat.", sc: "把胡萝卜和肉混合在一起。" },
+        { en: "carrot", ipa: "/ˈkærət/", zh: "胡萝卜", s: "Cut this carrot into small bits.", sc: "把这根胡萝卜切成小块。" },
+        { en: "add", ipa: "/æd/", zh: "添加", s: "Add a little salt to the soup.", sc: "在汤里加一点盐。" },
+        { en: "salt", ipa: "/sɔːlt/", zh: "盐", s: "Too much salt is not healthy.", sc: "吃太多盐不健康。" },
+        { en: "oil", ipa: "/ɔɪl/", zh: "植物油，动物油", s: "Put some oil in the hot pan.", sc: "在热锅里放点油。" },
+        { en: "minute", ipa: "/ˈmɪnɪt/", zh: "分，分钟", s: "Wait five minutes. The dumplings are cooking.", sc: "等五分钟，饺子正在煮呢。" }
+      ]
+    },
+    {
+      name: "Plays",
+      words: [
+        { en: "dragon", ipa: "/ˈdræɡən/", zh: "龙", s: "Look! A big dragon is in the sky.", sc: "看！天上有一条大龙。" },
+        { en: "point", ipa: "/pɔɪnt/", zh: "指", s: "Point at the picture and tell me.", sc: "指着那幅画告诉我。" },
+        { en: "house", ipa: "/haʊs/", zh: "房子", s: "There is a small house on the hill.", sc: "小山上有一座小房子。" },
+        { en: "there", ipa: "/ðeə/", zh: "有", s: "There is a nice river near our house.", sc: "我们家附近有一条好看的小河。" },
+        { en: "lot", ipa: "/lɒt/", zh: "许多", s: "A lot of birds are in that tree.", sc: "那棵树上有许多鸟。" },
+        { en: "cup", ipa: "/kʌp/", zh: "杯子", s: "Put your cup on the table, please.", sc: "请把你的杯子放在桌子上。" },
+        { en: "everywhere", ipa: "/ˈevriweə/", zh: "在各个地方", s: "I looked everywhere for my little cat.", sc: "我到处找我那只小猫。" },
+        { en: "awesome", ipa: "/ˈɔːsəm/", zh: "极棒的", s: "The school play was awesome tonight.", sc: "今晚的学校短剧太棒了。" },
+        { en: "leave", ipa: "/liːv/", zh: "离开", s: "We leave the park at five o'clock.", sc: "我们五点离开公园。" },
+        { en: "chant", ipa: "/tʃɑːnt/", zh: "唱", s: "Chant the song with me, please.", sc: "请和我一起唱这首歌。" },
+        { en: "through", ipa: "/θruː/", zh: "穿过", s: "We walk through the little green forest.", sc: "我们穿过那片绿色的小树林。" },
+        { en: "real", ipa: "/rɪəl/", zh: "真的", s: "Is this a real dragon in the story?", sc: "故事里这是一条真的龙吗？" },
+        { en: "picnic", ipa: "/ˈpɪknɪk/", zh: "野餐", s: "Let us have a picnic in the park.", sc: "我们去公园野餐吧。" },
+        { en: "sit", ipa: "/sɪt/", zh: "坐", s: "Sit down and have some juice.", sc: "坐下喝点果汁吧。" },
+        { en: "sandwich", ipa: "/ˈsænwɪtʃ/", zh: "三明治", s: "This sandwich has eggs in it.", sc: "这个三明治里夹着鸡蛋。" },
+        { en: "bottle", ipa: "/ˈbɒtl/", zh: "瓶子", s: "Put the empty bottle in this bag.", sc: "把空瓶子放进这个袋子里。" },
+        { en: "peel", ipa: "/piːl/", zh: "外皮", s: "Do not drop the banana peel on the grass.", sc: "不要把香蕉皮丢在草地上。" },
+        { en: "pick up", ipa: "/pɪk ʌp/", zh: "捡起", s: "Pick up your rubbish after the picnic.", sc: "野餐后请把垃圾捡起来。" },
+        { en: "rubbish", ipa: "/ˈrʌbɪʃ/", zh: "垃圾", s: "Where can we put all this rubbish?", sc: "我们把这些垃圾放到哪里呢？" },
+        { en: "sure", ipa: "/ʃʊə/", zh: "当然", s: "Sure, I can help you clean up.", sc: "当然，我可以帮你打扫。" },
+        { en: "forget", ipa: "/fəˈɡet/", zh: "忘记", s: "Do not forget your bag and bottle.", sc: "别忘了你的包和瓶子。" },
+        { en: "our", ipa: "/ˈaʊə/", zh: "我们的", s: "Look after our park and our school.", sc: "爱护我们的公园和我们的学校。" },
+        { en: "sky", ipa: "/skaɪ/", zh: "天", s: "The sky is blue and the sun is warm.", sc: "天空蓝蓝的，阳光暖暖的。" },
+        { en: "grass", ipa: "/ɡrɑːs/", zh: "草", s: "Do not walk on the green grass.", sc: "不要踩绿草地。" }
+      ]
+    }
+  ]
+};
+
+/* ==== book-g4-1.js ==== */
+window.BOOK_G4_1 = {
+  id: "g4-1",
+  name: "四年级上册",
+  version: "外研版 Join In · 四年级上册（2025秋版）",
+  units: [
+    {
+      name: "Unit 1 I love sports!",
+      words: [
+        { en: "report", ipa: "/rɪˈpɔːt/", zh: "报告，汇报", s: "Let me write a report about the game.", sc: "让我写一篇关于比赛的报告。" },
+        { en: "wheelchair", ipa: "/ˈwiːltʃeə(r)/", zh: "轮椅", s: "He can ride his wheelchair very fast.", sc: "他能把自己的轮椅骑得很快。" },
+        { en: "star", ipa: "/stɑː(r)/", zh: "明星，名角", s: "She is a ping-pong star in our school.", sc: "她是我们学校的乒乓球明星。" },
+        { en: "far", ipa: "/fɑː(r)/", zh: "远", s: "He can jump very far in the playground.", sc: "他能在操场上跳得很远。" },
+        { en: "ping-pong", ipa: "/ˈpɪŋ pɒŋ/", zh: "乒乓球运动", s: "I can play ping-pong with my dad.", sc: "我会和爸爸一起打乒乓球。" },
+        { en: "from", ipa: "/frɒm/", zh: "来自", s: "I am from Wuhan, a big city.", sc: "我来自武汉，一个大城市。" },
+        { en: "band", ipa: "/bænd/", zh: "圈，箍，带", s: "She has got a magic band on her arm.", sc: "她手臂上戴着一条魔法腕带。" },
+        { en: "very", ipa: "/ˈveri/", zh: "很，非常", s: "I can run very fast in the park.", sc: "我能在公园里跑得很快。" },
+        { en: "fast", ipa: "/fɑːst/", zh: "快地，快速地", s: "My brother can swim very fast.", sc: "我哥哥游泳游得很快。" },
+        { en: "sure", ipa: "/ʃʊə(r)/", zh: "肯定的，确信的，有把握的", s: "Are you sure? Yes, I am sure.", sc: "你确定吗？是的，我确定。" },
+        { en: "hurt", ipa: "/hɜːt/", zh: "（身体部位）感到疼痛", s: "My legs hurt after the race.", sc: "比赛后我的腿很疼。" },
+        { en: "think", ipa: "/θɪŋk/", zh: "想，思考", s: "I think he can win the race.", sc: "我想他能赢得这场比赛。" },
+        { en: "really", ipa: "/ˈriːəli/", zh: "真的", s: "He can really jump very high.", sc: "他真的能跳得很高。" },
+        { en: "wind", ipa: "/wɪnd/", zh: "风", s: "The wind is strong today, so I stay at home.", sc: "今天风很大，所以我待在家里。" },
+        { en: "ride", ipa: "/raɪd/", zh: "骑，骑自行车", s: "I can ride a bike to school.", sc: "我能骑自行车去上学。" }
+      ]
+    },
+    {
+      name: "Unit 2 In town",
+      words: [
+        { en: "town", ipa: "/taʊn/", zh: "镇，城镇，市镇", s: "There is a big park in our town.", sc: "我们镇上有一个大公园。" },
+        { en: "train", ipa: "/treɪn/", zh: "火车，列车", s: "We go to Beijing by train.", sc: "我们坐火车去北京。" },
+        { en: "station", ipa: "/ˈsteɪʃn/", zh: "车站；所；局", s: "The train stops at the station.", sc: "火车停在这个车站。" },
+        { en: "train station", ipa: "/ˈtreɪn ˌsteɪʃn/", zh: "火车站", s: "The train station is near the hospital.", sc: "火车站在医院附近。" },
+        { en: "supermarket", ipa: "/ˈsuːpəmɑːkɪt/", zh: "超级市场，超市", s: "Mum buys food at the supermarket.", sc: "妈妈在超市买食物。" },
+        { en: "restaurant", ipa: "/ˈrestrɒnt/", zh: "饭店，餐馆", s: "We have dinner in a Chinese restaurant.", sc: "我们在一家中餐馆吃晚饭。" },
+        { en: "excuse me", ipa: "/ɪkˈskjuːz miː/", zh: "劳驾", s: "Excuse me, where is the hospital?", sc: "劳驾，医院在哪里？" },
+        { en: "cinema", ipa: "/ˈsɪnəmə/", zh: "电影院", s: "The cinema is next to the bookshop.", sc: "电影院在书店旁边。" },
+        { en: "bus", ipa: "/bʌs/", zh: "公交车，公共汽车", s: "I go to school by bus.", sc: "我坐公交车去上学。" },
+        { en: "stop", ipa: "/stɒp/", zh: "车站", s: "The next stop is the hospital.", sc: "下一站是医院。" },
+        { en: "bus stop", ipa: "/ˈbʌs stɒp/", zh: "公交车站，公共汽车站", s: "The bus stop is in front of the shop.", sc: "公交车站在商店前面。" },
+        { en: "hospital", ipa: "/ˈhɒspɪtl/", zh: "医院", s: "My mother works in a hospital.", sc: "我妈妈在一家医院工作。" },
+        { en: "police", ipa: "/pəˈliːs/", zh: "警察", s: "The police can help you find the way.", sc: "警察能帮你找到路。" },
+        { en: "police station", ipa: "/pəˈliːs ˌsteɪʃn/", zh: "警察（分）局，派出所", s: "The police station is on your left.", sc: "派出所在你的左边。" },
+        { en: "shop", ipa: "/ʃɒp/", zh: "商店", s: "I buy pens in that small shop.", sc: "我在那家小商店买笔。" },
+        { en: "street", ipa: "/striːt/", zh: "大街，街道", s: "My home is on this street.", sc: "我家就在这条街上。" },
+        { en: "place", ipa: "/pleɪs/", zh: "地方，地点，场所", s: "This is my favourite place in town.", sc: "这是镇上我最喜欢的地方。" },
+        { en: "map", ipa: "/mæp/", zh: "地图", s: "Look at the map of our town.", sc: "看看我们镇的地图。" },
+        { en: "way", ipa: "/weɪ/", zh: "路，道路", s: "Can you tell me the way?", sc: "你能告诉我怎么走吗？" },
+        { en: "writer", ipa: "/ˈraɪtə(r)/", zh: "作家；作者", s: "She is my favourite writer of story books.", sc: "她是我最喜欢的故事书作家。" },
+        { en: "surprise", ipa: "/səˈpraɪz/", zh: "意想不到的事；不同寻常的事", s: "I have a surprise for you.", sc: "我有一个惊喜给你。" },
+        { en: "us", ipa: "/ʌs/", zh: "我们", s: "Please come to the park with us.", sc: "请和我们一起到公园来。" },
+        { en: "our", ipa: "/ˈaʊə(r)/", zh: "我们的", s: "This is our new classroom on the second floor.", sc: "这是我们在二楼的新教室。" },
+        { en: "thanks", ipa: "/θæŋks/", zh: "谢谢你，多谢", s: "Thanks for showing me the way.", sc: "谢谢你给我指路。" },
+        { en: "buy", ipa: "/baɪ/", zh: "买，购买", s: "I want to buy a new pen.", sc: "我想买一支新钢笔。" },
+        { en: "live", ipa: "/lɪv/", zh: "住，居住", s: "I live near the supermarket with my family.", sc: "我和家人住在超市附近。" },
+        { en: "near", ipa: "/nɪə(r)/", zh: "接近（地），靠近（地）", s: "The school is near my home.", sc: "学校离我家很近。" },
+        { en: "often", ipa: "/ˈɒfn/", zh: "经常，时常", s: "I often go there with my mum.", sc: "我经常和妈妈去那里。" },
+        { en: "first", ipa: "/fɜːst/", zh: "先，首先", s: "First, turn left at the shop.", sc: "首先，在商店那里向左转。" },
+        { en: "then", ipa: "/ðen/", zh: "接下来，然后", s: "Then go straight on for five minutes.", sc: "然后一直往前走五分钟。" },
+        { en: "left", ipa: "/left/", zh: "向左，朝左", s: "Go left at the hospital and you will see it.", sc: "在医院那里向左走，你就会看到它。" },
+        { en: "straight", ipa: "/streɪt/", zh: "笔直地，成直线地", s: "Go straight on and you will see it.", sc: "一直往前走，你就会看到它。" },
+        { en: "turn", ipa: "/tɜːn/", zh: "转弯；（使）改变方向", s: "Please turn right at the cinema.", sc: "请在电影院那里向右转。" },
+        { en: "there", ipa: "/ðeə(r)/", zh: "在那里", s: "The bookshop is over there, near the school.", sc: "书店就在那边，学校附近。" }
+      ]
+    },
+    {
+      name: "Unit 3 Cool jobs",
+      words: [
+        { en: "everyone", ipa: "/ˈevriwʌn/", zh: "每个人，人人", s: "Everyone in our class likes this job.", sc: "我们班每个人都喜欢这份工作。" },
+        { en: "work", ipa: "/wɜːk/", zh: "工作，干活", s: "My father works in a hospital.", sc: "我爸爸在一家医院工作。" },
+        { en: "hard", ipa: "/hɑːd/", zh: "费劲地，费力地", s: "She works hard every day in the garden.", sc: "她每天在花园里辛勤劳作。" },
+        { en: "taxi", ipa: "/ˈtæksi/", zh: "出租车", s: "He drives a taxi in our town.", sc: "他在我们镇上开出租车。" },
+        { en: "drive", ipa: "/draɪv/", zh: "驾车送（人）", s: "My uncle can drive a big bus.", sc: "我叔叔会开大巴士。" },
+        { en: "teacher", ipa: "/ˈtiːtʃə(r)/", zh: "教师", s: "My mother is an English teacher.", sc: "我妈妈是一位英语老师。" },
+        { en: "driver", ipa: "/ˈdraɪvə(r)/", zh: "司机，驾驶员", s: "The bus driver is very kind.", sc: "这位公交车司机非常友善。" },
+        { en: "around", ipa: "/əˈraʊnd/", zh: "到处，四处", s: "He walks around the garden every morning.", sc: "他每天早上在花园里四处走动。" },
+        { en: "farmer", ipa: "/ˈfɑːmə(r)/", zh: "农民", s: "The farmer grows rice and vegetables.", sc: "这位农民种水稻和蔬菜。" },
+        { en: "firefighter", ipa: "/ˈfaɪəfaɪtə(r)/", zh: "消防队员", s: "The firefighter is very brave and strong.", sc: "这位消防队员非常勇敢强壮。" },
+        { en: "policeman", ipa: "/pəˈliːsmən/", zh: "男警察", s: "My brother is a policeman in our town.", sc: "我哥哥是我们镇上的一名警察。" },
+        { en: "worker", ipa: "/ˈwɜːkə(r)/", zh: "工作人员", s: "The worker makes desks and chairs.", sc: "这位工人做桌子和椅子。" },
+        { en: "science", ipa: "/ˈsaɪəns/", zh: "科学", s: "I like science very much at school.", sc: "我在学校非常喜欢科学课。" },
+        { en: "ask", ipa: "/ɑːsk/", zh: "问，提问", s: "Can I ask you a question?", sc: "我能问你一个问题吗？" },
+        { en: "question", ipa: "/ˈkwestʃən/", zh: "问题；疑问", s: "I have a question about this job.", sc: "关于这份工作我有一个问题。" },
+        { en: "doctor", ipa: "/ˈdɒktə(r)/", zh: "医生，大夫", s: "I want to be a doctor.", sc: "我想成为一名医生。" },
+        { en: "astronaut", ipa: "/ˈæstrənɔːt/", zh: "宇航员，太空人", s: "She wants to be an astronaut.", sc: "她想成为一名宇航员。" },
+        { en: "nurse", ipa: "/nɜːs/", zh: "护士", s: "The nurse looks after sick people.", sc: "护士照顾生病的人。" },
+        { en: "teach", ipa: "/tiːtʃ/", zh: "教授，讲授", s: "He teaches English in a school.", sc: "他在一所学校教英语。" },
+        { en: "space", ipa: "/speɪs/", zh: "太空", s: "I want to go into space.", sc: "我想进入太空。" },
+        { en: "because", ipa: "/bɪˈkɒz/", zh: "因为", s: "I like this job because it is fun.", sc: "我喜欢这份工作，因为它很有趣。" },
+        { en: "keeper", ipa: "/ˈkiːpə(r)/", zh: "饲养员", s: "The keeper looks after the pandas.", sc: "饲养员照看大熊猫。" },
+        { en: "centre", ipa: "/ˈsentə(r)/", zh: "中心", s: "We sing and dance in the centre.", sc: "我们在活动中心唱歌跳舞。" },
+        { en: "shape", ipa: "/ʃeɪp/", zh: "形状，外形", s: "What shape is the garden behind your house?", sc: "你家房子后面的花园是什么形状？" },
+        { en: "gardener", ipa: "/ˈɡɑːdnə(r)/", zh: "园丁，花匠", s: "My grandpa is a gardener in a big park.", sc: "我爷爷是一个大公园的园丁。" },
+        { en: "garden", ipa: "/ˈɡɑːdn/", zh: "花园，园子", s: "There are many flowers in the garden.", sc: "花园里有很多花。" },
+        { en: "house", ipa: "/haʊs/", zh: "房屋，房子", s: "We live in a big house.", sc: "我们住在一栋大房子里。" },
+        { en: "tall", ipa: "/tɔːl/", zh: "高的，高大的", s: "My father is very tall, like a basketball player.", sc: "我爸爸个子很高，像个篮球运动员。" },
+        { en: "prepare", ipa: "/prɪˈpeə(r)/", zh: "准备（食物、物品）", s: "I prepare food for my family.", sc: "我为家人准备食物。" },
+        { en: "cleaner", ipa: "/ˈkliːnə(r)/", zh: "清洁工人", s: "The cleaner cleans our school every day.", sc: "清洁工每天打扫我们学校。" },
+        { en: "kind", ipa: "/kaɪnd/", zh: "种，类", s: "What kind of job do you like?", sc: "你喜欢哪一类工作？" },
+        { en: "fire", ipa: "/ˈfaɪə(r)/", zh: "火；失火，火灾", s: "The firefighter puts out the fire.", sc: "消防队员把火扑灭了。" },
+        { en: "dream job", ipa: "/ˈdriːm dʒɒb/", zh: "梦想中的工作", s: "My dream job is to be a teacher.", sc: "我梦想的工作是当一名老师。" },
+        { en: "animal", ipa: "/ˈænɪml/", zh: "动物", s: "I want to work with animals.", sc: "我想和动物一起工作。" },
+        { en: "panda", ipa: "/ˈpændə/", zh: "大熊猫", s: "The panda is black and white.", sc: "大熊猫是黑白色的。" },
+        { en: "moon", ipa: "/muːn/", zh: "月亮，月球", s: "I want to fly to the moon.", sc: "我想飞到月球上去。" },
+        { en: "scientist", ipa: "/ˈsaɪəntɪst/", zh: "科学家", s: "The scientist works in a lab.", sc: "这位科学家在实验室里工作。" },
+        { en: "sick", ipa: "/sɪk/", zh: "生病的，患病的", s: "The doctor helps sick people every day.", sc: "这位医生每天帮助生病的人。" },
+        { en: "team", ipa: "/tiːm/", zh: "工作队，工作组", s: "Our team has ten people from two schools.", sc: "我们组有十个人，来自两所学校。" },
+        { en: "healthy", ipa: "/ˈhelθi/", zh: "健康的，健壮的", s: "Eating vegetables and fruit keeps us healthy.", sc: "吃蔬菜和水果让我们保持健康。" },
+        { en: "strong", ipa: "/strɒŋ/", zh: "强健的，健壮的，力气大的", s: "My father is tall and strong.", sc: "我爸爸又高又壮。" },
+        { en: "grow", ipa: "/ɡrəʊ/", zh: "种植", s: "The farmer grows apples and oranges.", sc: "这位农民种苹果和橘子。" },
+        { en: "learn", ipa: "/lɜːn/", zh: "学习；学到；学会", s: "I learn English every day after school.", sc: "我每天放学后学英语。" }
+      ]
+    },
+    {
+      name: "Unit 4 Let's shop!",
+      words: [
+        { en: "hundred", ipa: "/ˈhʌndrəd/", zh: "一百", s: "One hundred yuan is a lot of money.", sc: "一百元是很大一笔钱。" },
+        { en: "zookeeper", ipa: "/ˈzuːkiːpə(r)/", zh: "动物园饲养员", s: "The zookeeper looks after the animals.", sc: "动物园饲养员照看动物。" },
+        { en: "forty-three", ipa: "/ˌfɔːti ˈθriː/", zh: "四十三", s: "This book is forty-three yuan in the shop.", sc: "这本书在商店里卖四十三元。" },
+        { en: "bee", ipa: "/biː/", zh: "蜜蜂", s: "The bee is on the flower.", sc: "蜜蜂落在花上。" },
+        { en: "flea market", ipa: "/ˈfliː ˌmɑːkɪt/", zh: "跳蚤市场", s: "I buy old books at the flea market.", sc: "我在跳蚤市场买旧书。" },
+        { en: "early", ipa: "/ˈɜːli/", zh: "在早期，在初期", s: "I get up early every morning.", sc: "我每天早上起得很早。" },
+        { en: "skateboard", ipa: "/ˈskeɪtbɔːd/", zh: "滑板", s: "I want to buy a new skateboard.", sc: "我想买一块新滑板。" },
+        { en: "fifty", ipa: "/ˈfɪfti/", zh: "五十", s: "My new skateboard is fifty yuan.", sc: "我的新滑板五十元。" },
+        { en: "noon", ipa: "/nuːn/", zh: "正午，中午", s: "We have lunch at school at noon.", sc: "我们中午在学校吃午饭。" },
+        { en: "yuan", ipa: "/juˈɑːn/", zh: "元", s: "This toy car is only ten yuan.", sc: "这辆玩具车只要十元。" },
+        { en: "skateboarding", ipa: "/ˈskeɪtbɔːdɪŋ/", zh: "滑板运动", s: "I like skateboarding with my friends.", sc: "我喜欢和朋友们玩滑板。" },
+        { en: "thirty-three", ipa: "/ˌθɜːti ˈθriː/", zh: "三十三", s: "That blue bag is thirty-three yuan.", sc: "那个蓝色的包三十三元。" },
+        { en: "friend", ipa: "/frend/", zh: "朋友，友人", s: "I buy a gift for my friend.", sc: "我给朋友买了一件礼物。" },
+        { en: "forty-four", ipa: "/ˌfɔːti ˈfɔː(r)/", zh: "四十四", s: "These black shoes are forty-four yuan.", sc: "这双黑色的鞋四十四元。" },
+        { en: "bakery", ipa: "/ˈbeɪkəri/", zh: "面包店", s: "I buy bread at the bakery.", sc: "我在面包店买面包。" },
+        { en: "carrot", ipa: "/ˈkærət/", zh: "胡萝卜", s: "The rabbit likes carrots very much.", sc: "兔子非常喜欢胡萝卜。" },
+        { en: "flower", ipa: "/ˈflaʊə(r)/", zh: "花，花朵", s: "I want to buy some flowers.", sc: "我想买一些花。" },
+        { en: "thirteen", ipa: "/ˌθɜːˈtiːn/", zh: "十三", s: "I have thirteen yuan in my bag.", sc: "我包里有十三元。" },
+        { en: "toy", ipa: "/tɔɪ/", zh: "玩具", s: "This toy car is twenty yuan.", sc: "这辆玩具车二十元。" },
+        { en: "seventy", ipa: "/ˈsevnti/", zh: "七十", s: "That red bike is seventy yuan.", sc: "那辆红色的自行车七十元。" },
+        { en: "pair", ipa: "/peə(r)/", zh: "一双，一对", s: "I want a pair of shoes.", sc: "我想要一双鞋。" },
+        { en: "eleven", ipa: "/ɪˈlevn/", zh: "十一", s: "My new pen is eleven yuan.", sc: "我的新钢笔十一元。" },
+        { en: "give", ipa: "/ɡɪv/", zh: "赠送，给予", s: "Please give me two red apples.", sc: "请给我两个红苹果。" },
+        { en: "thirty", ipa: "/ˈθɜːti/", zh: "三十", s: "The two books are thirty yuan.", sc: "这两本书三十元。" },
+        { en: "spend", ipa: "/spend/", zh: "花销，花费", s: "I spend ten yuan on a book.", sc: "我花十元买了一本书。" },
+        { en: "eighteen", ipa: "/ˌeɪˈtiːn/", zh: "十八", s: "The birthday cake is eighteen yuan.", sc: "这个生日蛋糕十八元。" },
+        { en: "box", ipa: "/bɒks/", zh: "盒；匣；箱", s: "There is a gift in the box.", sc: "盒子里有一件礼物。" },
+        { en: "eighty", ipa: "/ˈeɪti/", zh: "八十", s: "That warm coat is eighty yuan.", sc: "那件保暖的外套八十元。" },
+        { en: "use", ipa: "/juːz/", zh: "使用", s: "I use the money to buy books.", sc: "我用这些钱买书。" },
+        { en: "nineteen", ipa: "/ˌnaɪnˈtiːn/", zh: "十九", s: "This white shirt is nineteen yuan.", sc: "这件白衬衫十九元。" },
+        { en: "save", ipa: "/seɪv/", zh: "储蓄，存（钱）", s: "I save ten yuan every week.", sc: "我每周存十元。" },
+        { en: "sixteen", ipa: "/ˌsɪksˈtiːn/", zh: "十六", s: "These two pairs of socks are sixteen yuan.", sc: "这两双袜子十六元。" },
+        { en: "holiday", ipa: "/ˈhɒlədeɪ/", zh: "假期，休假日", s: "I save money for the holiday.", sc: "我为假期存钱。" },
+        { en: "sixty-six", ipa: "/ˌsɪksti ˈsɪks/", zh: "六十六", s: "My new schoolbag is sixty-six yuan.", sc: "我的新书包六十六元。" },
+        { en: "share", ipa: "/ʃeə(r)/", zh: "共享", s: "I share my cake with my sister.", sc: "我和妹妹分享我的蛋糕。" },
+        { en: "twenty", ipa: "/ˈtwenti/", zh: "二十", s: "The English book is twenty yuan.", sc: "这本英语书二十元。" },
+        { en: "money", ipa: "/ˈmʌni/", zh: "钱", s: "I put my money in the box.", sc: "我把钱放在盒子里。" },
+        { en: "twelve", ipa: "/twelv/", zh: "十二", s: "The two pens are twelve yuan.", sc: "这两支钢笔十二元。" },
+        { en: "should", ipa: "/ʃʊd/", zh: "应当，应该", s: "We should make good use of money.", sc: "我们应该好好使用金钱。" }
+      ]
+    },
+    {
+      name: "Unit 5 Shapes are fun!",
+      words: [
+        { en: "chocolate", ipa: "/ˈtʃɒklət/", zh: "巧克力糖；巧克力", s: "I like chocolate very much, it is sweet.", sc: "我非常喜欢巧克力，它很甜。" },
+        { en: "triangle", ipa: "/ˈtraɪæŋɡl/", zh: "三角形；三角形物体", s: "The roof of the house is a triangle.", sc: "这座房子的屋顶是三角形的。" },
+        { en: "circle", ipa: "/ˈsɜːkl/", zh: "圆（形）", s: "The wheel of the bus is a circle.", sc: "公交车的轮子是圆形的。" },
+        { en: "rectangle", ipa: "/ˈrektæŋɡl/", zh: "长方形，矩形", s: "The door of our classroom is a rectangle.", sc: "我们教室的门是长方形的。" },
+        { en: "square", ipa: "/skweə(r)/", zh: "正方形，四方形", s: "The box on the desk is a square.", sc: "桌子上的盒子是正方形的。" },
+        { en: "into", ipa: "/ˈɪntuː/", zh: "进入，到……里面", s: "Put the ball into the box.", sc: "把球放进盒子里。" },
+        { en: "tummy", ipa: "/ˈtʌmi/", zh: "肚子", s: "My tummy is full now, thank you.", sc: "我的肚子现在饱了，谢谢你。" },
+        { en: "yummy", ipa: "/ˈjʌmi/", zh: "美味的", s: "The cake from the bakery is very yummy.", sc: "面包店的蛋糕非常好吃。" },
+        { en: "wheel", ipa: "/wiːl/", zh: "车轮", s: "The wheel of my bike is round.", sc: "我自行车的轮子是圆的。" },
+        { en: "another", ipa: "/əˈnʌðə(r)/", zh: "另一，又一", s: "I want another piece of chocolate.", sc: "我想再要一块巧克力。" },
+        { en: "a lot", ipa: "/ə ˈlɒt/", zh: "大量，许多", s: "I can see a lot of shapes.", sc: "我能看到许多形状。" },
+        { en: "its", ipa: "/ɪts/", zh: "它的", s: "Its head is a big circle.", sc: "它的头是一个大圆形。" },
+        { en: "line", ipa: "/laɪn/", zh: "线，线条", s: "A square has four lines, and a triangle has three.", sc: "正方形有四条线，三角形有三条。" }
+      ]
+    },
+    {
+      name: "Unit 6 Our animal friends",
+      words: [
+        { en: "zoo", ipa: "/zuː/", zh: "动物园", s: "We see many animals at the zoo.", sc: "我们在动物园看到很多动物。" },
+        { en: "boy", ipa: "/bɔɪ/", zh: "男孩，少年", s: "The boy has a little hamster.", sc: "这个男孩有一只小仓鼠。" },
+        { en: "sky", ipa: "/skaɪ/", zh: "天，天空", s: "Birds are flying in the sky.", sc: "鸟儿在天空中飞翔。" },
+        { en: "girl", ipa: "/ɡɜːl/", zh: "女孩，小姑娘", s: "The girl is looking after her pet.", sc: "这个女孩在照顾她的宠物。" },
+        { en: "neck", ipa: "/nek/", zh: "颈，脖子", s: "The giraffe has a long neck.", sc: "长颈鹿有长长的脖子。" },
+        { en: "hamster", ipa: "/ˈhæmstə(r)/", zh: "仓鼠", s: "My hamster is small and cute.", sc: "我的仓鼠又小又可爱。" },
+        { en: "brave", ipa: "/breɪv/", zh: "勇敢的，无畏的", s: "The little dog is very brave.", sc: "这只小狗非常勇敢。" },
+        { en: "cute", ipa: "/kjuːt/", zh: "漂亮的，逗人喜爱的", s: "Your little cat is so cute.", sc: "你的小猫真可爱。" },
+        { en: "heavy", ipa: "/ˈhevi/", zh: "重的", s: "The elephant is big and heavy.", sc: "大象又大又重。" },
+        { en: "parrot", ipa: "/ˈpærət/", zh: "鹦鹉", s: "The parrot can talk and sing.", sc: "这只鹦鹉会说话会唱歌。" },
+        { en: "giraffe", ipa: "/dʒəˈrɑːf/", zh: "长颈鹿", s: "The giraffe is very tall, it eats leaves.", sc: "长颈鹿非常高，它吃树叶。" },
+        { en: "talk", ipa: "/tɔːk/", zh: "说话", s: "My bird can talk to me.", sc: "我的鸟能和我说话。" },
+        { en: "lion", ipa: "/ˈlaɪən/", zh: "狮子", s: "The lion is the king of animals.", sc: "狮子是百兽之王。" },
+        { en: "animal shelter", ipa: "/ˈænɪml ˌʃeltə(r)/", zh: "动物收容所", s: "We help animals at the animal shelter.", sc: "我们在动物收容所帮助动物。" },
+        { en: "elephant", ipa: "/ˈelɪfənt/", zh: "象", s: "The elephant has a long nose.", sc: "大象有长长的鼻子。" },
+        { en: "catch", ipa: "/kætʃ/", zh: "接住；接（球等）", s: "The dog can catch the ball.", sc: "这只狗能接住球。" },
+        { en: "horse", ipa: "/hɔːs/", zh: "马", s: "The horse can run very fast.", sc: "这匹马能跑得很快。" },
+        { en: "grass", ipa: "/ɡrɑːs/", zh: "草，青草", s: "Sheep eat grass on the farm.", sc: "羊在农场上吃草。" },
+        { en: "pig", ipa: "/pɪɡ/", zh: "猪", s: "The pig is big and pink.", sc: "这头猪又大又粉。" },
+        { en: "farm", ipa: "/fɑːm/", zh: "农场，养殖场", s: "My grandpa lives on a farm.", sc: "我爷爷住在农场里。" },
+        { en: "sheep", ipa: "/ʃiːp/", zh: "羊，绵羊", s: "There are ten sheep on the farm.", sc: "农场上有十只羊。" },
+        { en: "tail", ipa: "/teɪl/", zh: "尾巴", s: "The cat has a long tail.", sc: "这只猫有一条长尾巴。" },
+        { en: "cow", ipa: "/kaʊ/", zh: "牛，奶牛", s: "The cow on the farm gives us milk.", sc: "农场上的奶牛给我们牛奶。" },
+        { en: "climb", ipa: "/klaɪm/", zh: "攀登，爬", s: "The cat can climb trees very fast.", sc: "这只猫能很快地爬树。" },
+        { en: "slow", ipa: "/sləʊ/", zh: "慢的，缓慢的", s: "The turtle is very slow, but it is cute.", sc: "乌龟很慢，但它很可爱。" },
+        { en: "perfect", ipa: "/ˈpɜːfɪkt/", zh: "完美的", s: "This cat is a perfect friend.", sc: "这只猫是一个完美的朋友。" },
+        { en: "pet", ipa: "/pet/", zh: "宠物", s: "I have a pet at home.", sc: "我家里有一只宠物。" }
+      ]
+    },
+    {
+      name: "Plays",
+      words: [
+        { en: "city", ipa: "/ˈsɪti/", zh: "城市，都市", s: "Mouse Jack goes to the city.", sc: "老鼠杰克去了城市。" },
+        { en: "story", ipa: "/ˈstɔːri/", zh: "故事", s: "This is a story about a wolf.", sc: "这是一个关于狼的故事。" },
+        { en: "party", ipa: "/ˈpɑːti/", zh: "聚会，宴会", s: "We have a party at school.", sc: "我们在学校举行聚会。" },
+        { en: "tie", ipa: "/taɪ/", zh: "把……系起来", s: "Tie the bag with a rope.", sc: "用绳子把袋子系起来。" },
+        { en: "gift", ipa: "/ɡɪft/", zh: "礼物", s: "This is a gift for you.", sc: "这是给你的礼物。" },
+        { en: "never", ipa: "/ˈnevə(r)/", zh: "决不，永不", s: "I never tell lies to my friends.", sc: "我从不向朋友说谎。" },
+        { en: "address", ipa: "/əˈdres/", zh: "地址", s: "Please tell me your home address.", sc: "请告诉我你家的地址。" },
+        { en: "trust", ipa: "/trʌst/", zh: "信任，信赖，相信", s: "I trust my good friends at school.", sc: "我信任学校里的好朋友。" },
+        { en: "snow", ipa: "/snəʊ/", zh: "雪", s: "The snow is white and cold.", sc: "雪又白又冷。" },
+        { en: "knock", ipa: "/nɒk/", zh: "敲门（窗）", s: "Please knock at the door before you come in.", sc: "进来前请先敲门。" },
+        { en: "bad", ipa: "/bæd/", zh: "（道德品质）坏的，不好的", s: "The wolf is a bad animal.", sc: "狼是坏动物。" },
+        { en: "wolf", ipa: "/wʊlf/", zh: "狼", s: "The wolf wants to eat the sheep.", sc: "狼想吃掉羊。" },
+        { en: "guy", ipa: "/ɡaɪ/", zh: "家伙", s: "He is a nice guy, we all like him.", sc: "他是个不错的人，我们都喜欢他。" },
+        { en: "paw", ipa: "/pɔː/", zh: "（动物的）爪子", s: "The cat has four soft paws.", sc: "这只猫有四只软软的爪子。" },
+        { en: "hunter", ipa: "/ˈhʌntə(r)/", zh: "猎人", s: "The hunter sees the wolf in the snow.", sc: "猎人在雪地里看到了狼。" },
+        { en: "bag", ipa: "/bæɡ/", zh: "袋；包；囊", s: "There is a gift in the bag.", sc: "袋子里有一件礼物。" },
+        { en: "life", ipa: "/laɪf/", zh: "生命", s: "The hunter saves his life in the forest.", sc: "猎人在森林里救了他的命。" }
+      ]
+    }
+  ]
+};
+
+/* ==== book-g4-2.js ==== */
+window.BOOK_G4_2 = {
+  id: "g4-2",
+  name: "四年级下册",
+  version: "外研版 Join In · 四年级下册（2026春版）",
+  units: [
+    {
+      name: "Unit 1 Around the clock",
+      words: [
+        { en: "clock", ipa: "/klɒk/", zh: "（时）钟", s: "The clock on the wall is new.", sc: "墙上的钟是新的。" },
+        { en: "two o'clock", ipa: "/ˌtuː əˈklɒk/", zh: "2点钟", s: "Let us meet at two o'clock.", sc: "我们两点钟见面吧。" },
+        { en: "fifteen", ipa: "/ˌfɪfˈtiːn/", zh: "十五", s: "It is eight fifteen. Class begins now.", sc: "现在八点十五分，开始上课。" },
+        { en: "half", ipa: "/hɑːf/", zh: "半，一半", s: "I waited half an hour for you.", sc: "我等了你半个小时。" },
+        { en: "past", ipa: "/pɑːst/", zh: "晚于；在……之后", s: "It is twenty past nine now.", sc: "现在九点二十分。" },
+        { en: "half past eight", ipa: "/ˌhɑːf pɑːst ˈeɪt/", zh: "8点半", s: "I go to bed at half past eight.", sc: "我八点半上床睡觉。" },
+        { en: "forty-five", ipa: "/ˌfɔːti ˈfaɪv/", zh: "四十五", s: "It is eight forty-five. Are you ready?", sc: "现在八点四十五分，你准备好了吗？" },
+        { en: "beat the clock", ipa: "/ˌbiːt ðə ˈklɒk/", zh: "提前完成", s: "Can you beat the clock today?", sc: "你今天能提前完成吗？" },
+        { en: "life", ipa: "/laɪf/", zh: "生命", s: "Time is life. Please use it well.", sc: "时间就是生命，请好好利用它。" },
+        { en: "task", ipa: "/tɑːsk/", zh: "任务", s: "Here is my task for Saturday.", sc: "这是我星期六的任务。" },
+        { en: "hour", ipa: "/ˈaʊə/", zh: "小时", s: "Can you do five things in one hour?", sc: "你能在一小时内做五件事吗？" },
+        { en: "kilometre (km)", ipa: "/ˈkɪləmiːtə/", zh: "千米", s: "We run one kilometre every morning.", sc: "我们每天早上跑一千米。" },
+        { en: "salad", ipa: "/ˈsæləd/", zh: "蔬菜沙拉", s: "I can make a salad in ten minutes.", sc: "我能在十分钟内做一份蔬菜沙拉。" },
+        { en: "am", ipa: "/ˌeɪ ˈem/", zh: "午前，上午", s: "I get up at seven am.", sc: "我上午七点起床。" },
+        { en: "pm", ipa: "/ˌpiː ˈem/", zh: "下午", s: "Come to my home at three pm.", sc: "下午三点来我家吧。" },
+        { en: "evening", ipa: "/ˈiːvnɪŋ/", zh: "傍晚；晚上", s: "It is eight pm in the evening here.", sc: "这里现在是晚上八点。" },
+        { en: "breakfast", ipa: "/ˈbrekfəst/", zh: "早餐，早饭", s: "I have breakfast at seven o'clock.", sc: "我七点吃早饭。" },
+        { en: "activity", ipa: "/ækˈtɪvəti/", zh: "活动", s: "Drawing is my favourite school activity.", sc: "画画是我最喜欢的校园活动。" }
+      ]
+    },
+    {
+      name: "Unit 2 All year round",
+      words: [
+        { en: "year", ipa: "/jɪə/", zh: "年", s: "There are twelve months in a year.", sc: "一年有十二个月。" },
+        { en: "all year round", ipa: "/ˌɔːl jɪə ˈraʊnd/", zh: "全年", s: "It is warm here all year round.", sc: "这里全年都很暖和。" },
+        { en: "when", ipa: "/wen/", zh: "什么时候", s: "When is your birthday this year?", sc: "今年你的生日是什么时候？" },
+        { en: "January", ipa: "/ˈdʒænjuəri/", zh: "一月", s: "January is the first month of the year.", sc: "一月是一年的第一个月。" },
+        { en: "February", ipa: "/ˈfebruəri/", zh: "二月", s: "Our school starts in February here.", sc: "我们这里二月开学。" },
+        { en: "March", ipa: "/mɑːtʃ/", zh: "三月", s: "We plant small trees together in March.", sc: "我们三月一起种小树。" },
+        { en: "April", ipa: "/ˈeɪprəl/", zh: "四月", s: "April is warm and full of flowers.", sc: "四月暖和，开满了花。" },
+        { en: "May", ipa: "/meɪ/", zh: "五月", s: "We have a sports day in May.", sc: "我们五月开运动会。" },
+        { en: "June", ipa: "/dʒuːn/", zh: "六月", s: "We have a big party in June.", sc: "我们六月有一场盛大的聚会。" },
+        { en: "July", ipa: "/dʒʊˈlaɪ/", zh: "七月", s: "The summer holiday starts in July.", sc: "暑假从七月开始。" },
+        { en: "August", ipa: "/ˈɔːɡəst/", zh: "八月", s: "It is very hot here in August.", sc: "这里八月非常热。" },
+        { en: "September", ipa: "/sepˈtembə/", zh: "九月", s: "We go back to school in September.", sc: "我们九月返校。" },
+        { en: "October", ipa: "/ɒkˈtəʊbə/", zh: "十月", s: "October is cool and the leaves turn red.", sc: "十月凉爽，树叶变红了。" },
+        { en: "November", ipa: "/nəʊˈvembə/", zh: "十一月", s: "It gets very cold here in November.", sc: "这里十一月变得很冷。" },
+        { en: "remember", ipa: "/rɪˈmembə/", zh: "记得", s: "Remember to take your warm coat.", sc: "记得带上你的保暖外套。" },
+        { en: "December", ipa: "/dɪˈsembə/", zh: "十二月", s: "December is the last month of the year.", sc: "十二月是一年的最后一个月。" },
+        { en: "swallow", ipa: "/ˈswɒləʊ/", zh: "燕子", s: "I see some swallows in that tree.", sc: "我看见那棵树上有一些燕子。" },
+        { en: "lunchtime", ipa: "/ˈlʌntʃtaɪm/", zh: "午餐时间", s: "We meet in the park at lunchtime.", sc: "我们午餐时间在公园见面。" },
+        { en: "baby", ipa: "/ˈbeɪbi/", zh: "雏鸟", s: "The mother bird feeds her baby.", sc: "鸟妈妈在喂她的雏鸟。" },
+        { en: "art", ipa: "/ɑːt/", zh: "美术，艺术", s: "My sister is very good at art.", sc: "我姐姐很擅长美术。" },
+        { en: "lesson", ipa: "/ˈlesn/", zh: "课；课程", s: "It is time to have an English lesson.", sc: "该上英语课了。" },
+        { en: "photo", ipa: "/ˈfəʊtəʊ/", zh: "照片，相片", s: "I have many photos of my family.", sc: "我有许多我家人的照片。" },
+        { en: "move", ipa: "/muːv/", zh: "迁移", s: "Some animals move when the weather changes.", sc: "有些动物会随着天气变化迁徙。" },
+        { en: "the south", ipa: "/ðə ˈsaʊθ/", zh: "南方，南部", s: "They are flying to the south for winter.", sc: "它们正飞往南方过冬。" }
+      ]
+    },
+    {
+      name: "Unit 3 That's my room",
+      words: [
+        { en: "bookshelf", ipa: "/ˈbʊkʃelf/", zh: "书架", s: "My books are on the bookshelf.", sc: "我的书在书架上。" },
+        { en: "lamp", ipa: "/læmp/", zh: "灯", s: "Put the lamp beside your bed.", sc: "把灯放在你的床边。" },
+        { en: "sofa", ipa: "/ˈsəʊfə/", zh: "长沙发", s: "My grandpa is reading on the sofa.", sc: "我爷爷在沙发上看书。" },
+        { en: "table", ipa: "/ˈteɪbl/", zh: "桌子", s: "The cups are on the little table.", sc: "杯子在小桌子上。" },
+        { en: "bed", ipa: "/bed/", zh: "床", s: "My ball is under the bed.", sc: "我的球在床下面。" },
+        { en: "leave", ipa: "/liːv/", zh: "把……留在某处", s: "Do not leave your bag on the floor.", sc: "不要把你的包留在地上。" },
+        { en: "bag", ipa: "/bæɡ/", zh: "袋；包", s: "Put your books back in the bag.", sc: "把你的书放回包里。" },
+        { en: "cup", ipa: "/kʌp/", zh: "杯子", s: "There is a cup beside the lamp.", sc: "灯的旁边有一个杯子。" },
+        { en: "kitchen", ipa: "/ˈkɪtʃɪn/", zh: "厨房", s: "Mum is cooking in the kitchen now.", sc: "妈妈现在正在厨房做饭。" },
+        { en: "living room", ipa: "/ˈlɪvɪŋ ruːm/", zh: "起居室，客厅", s: "We watch TV in the living room.", sc: "我们在客厅里看电视。" },
+        { en: "bathroom", ipa: "/ˈbɑːθruːm/", zh: "浴室，卫生间", s: "The bathroom is beside the bedroom.", sc: "浴室在卧室旁边。" },
+        { en: "bedroom", ipa: "/ˈbedruːm/", zh: "卧室", s: "My bedroom is small but very tidy.", sc: "我的卧室小，但是很整洁。" },
+        { en: "tidy", ipa: "/ˈtaɪdi/", zh: "使整洁，整理，收拾", s: "Please tidy your bedroom after school.", sc: "放学后请收拾你的卧室。" }
+      ]
+    },
+    {
+      name: "Unit 4 Friends for life",
+      words: [
+        { en: "car", ipa: "/kɑː/", zh: "汽车", s: "My dad drives his car to work.", sc: "我爸爸开车去上班。" },
+        { en: "different", ipa: "/ˈdɪfrənt/", zh: "不同的，不一样的，有差异的", s: "We like different colours and games.", sc: "我们喜欢不同的颜色和游戏。" },
+        { en: "together", ipa: "/təˈɡeðə/", zh: "一起", s: "Good friends play together every day.", sc: "好朋友每天一起玩。" },
+        { en: "maybe", ipa: "/ˈmeɪbi/", zh: "也许，大概，可能", s: "Maybe we can play together tomorrow.", sc: "也许我们明天可以一起玩。" },
+        { en: "anymore", ipa: "/ˌeniˈmɔː/", zh: "（一般只用于表示否定意义的上下文中）而今再也", s: "We do not walk to school anymore.", sc: "我们不再步行上学了。" },
+        { en: "both", ipa: "/bəʊθ/", zh: "两者，双方，两个都", s: "My two friends both like football.", sc: "我的两个朋友都喜欢足球。" },
+        { en: "phone", ipa: "/fəʊn/", zh: "电话", s: "Please give me your new phone number.", sc: "请把你的新电话号码给我。" },
+        { en: "gift", ipa: "/ɡɪft/", zh: "礼物", s: "This little gift is for you.", sc: "这个小礼物是给你的。" },
+        { en: "will", ipa: "/wɪl/", zh: "将，会", s: "I will always be here for you.", sc: "我会一直陪在你身边。" },
+        { en: "indeed", ipa: "/ɪnˈdiːd/", zh: "真正地", s: "He is indeed my best true friend.", sc: "他确实是我最好的真朋友。" },
+        { en: "friendly", ipa: "/ˈfrendli/", zh: "友好的，友善的", s: "Everyone here is kind and friendly.", sc: "这里的每个人都善良又友好。" }
+      ]
+    },
+    {
+      name: "Unit 5 A great day out",
+      words: [
+        { en: "trip", ipa: "/trɪp/", zh: "旅行，出行", s: "Our class trip is next Friday.", sc: "我们班的出行在下周五。" },
+        { en: "history", ipa: "/ˈhɪstri/", zh: "历史", s: "The museum tells the history of our city.", sc: "博物馆讲述我们这座城市的历史。" },
+        { en: "plant", ipa: "/plɑːnt/", zh: "植物", s: "This green plant grows beside the river.", sc: "这种绿色植物长在河边。" },
+        { en: "museum", ipa: "/mjuˈziːəm/", zh: "博物馆", s: "We go to the museum by bus.", sc: "我们坐公共汽车去博物馆。" },
+        { en: "forest", ipa: "/ˈfɒrɪst/", zh: "森林，林区", s: "There are many birds in the forest.", sc: "森林里有许多鸟。" },
+        { en: "last", ipa: "/lɑːst/", zh: "最后的", s: "This is the last stop of our trip.", sc: "这是我们出行的最后一站。" },
+        { en: "shopping", ipa: "/ˈʃɒpɪŋ/", zh: "购物", s: "We do some shopping after the museum.", sc: "参观完博物馆我们去购物。" },
+        { en: "soon", ipa: "/suːn/", zh: "不久，即刻，很快", s: "See you soon. Get on the bus.", sc: "很快再见，上车吧。" },
+        { en: "note", ipa: "/nəʊt/", zh: "笔记，记录", s: "Take some notes about the old trees.", sc: "把这些古树的样子记下来。" },
+        { en: "beech", ipa: "/biːtʃ/", zh: "山毛榉", s: "This beech tree is very old and tall.", sc: "这棵山毛榉树又老又高。" },
+        { en: "metre", ipa: "/ˈmiːtə/", zh: "米", s: "That tree is about twenty metres tall.", sc: "那棵树大约有二十米高。" },
+        { en: "lark", ipa: "/lɑːk/", zh: "百灵鸟", s: "Listen! A lark is singing in the grass.", sc: "听！草丛里有一只百灵鸟在唱歌。" },
+        { en: "letter", ipa: "/ˈletə/", zh: "信", s: "Write a letter to the newspaper, please.", sc: "请给报社写一封信。" },
+        { en: "newspaper", ipa: "/ˈnjuːzpeɪpə/", zh: "报社", s: "The newspaper says the forest is opening.", sc: "报纸上说这片森林要开放了。" },
+        { en: "nature", ipa: "/ˈneɪtʃə/", zh: "大自然，自然界", s: "We love nature. It is so beautiful.", sc: "我们热爱大自然，她真美。" },
+        { en: "reserve", ipa: "/rɪˈzɜːv/", zh: "（野生生物）保护区", s: "Keep quiet in the bird reserve.", sc: "在鸟类保护区里请保持安静。" },
+        { en: "nature reserve", ipa: "/ˈneɪtʃə rɪˌzɜːv/", zh: "自然保护区", s: "The bus takes us to the nature reserve.", sc: "公共汽车把我们送到自然保护区。" },
+        { en: "beach", ipa: "/biːtʃ/", zh: "海滩，沙滩", s: "We walk along the beach after lunch.", sc: "午饭后我们沿着海滩散步。" },
+        { en: "off", ipa: "/ɒf/", zh: "不在（某物）上面", s: "Please keep off the green grass.", sc: "请不要踩踏草地。" },
+        { en: "running", ipa: "/ˈrʌnɪŋ/", zh: "跑，跑步", s: "I like running with my dog.", sc: "我喜欢和我的狗一起跑步。" },
+        { en: "playground", ipa: "/ˈpleɪɡraʊnd/", zh: "（学校的）操场，运动场", s: "The children are playing in the playground.", sc: "孩子们正在操场上玩。" },
+        { en: "library", ipa: "/ˈlaɪbrəri/", zh: "图书馆", s: "Let us read in the library this afternoon.", sc: "今天下午我们去图书馆看书吧。" },
+        { en: "hill", ipa: "/hɪl/", zh: "小山", s: "Walk up the hill and look down.", sc: "爬上小山往下看。" },
+        { en: "watch", ipa: "/wɒtʃ/", zh: "观看；观察", s: "We watch the birds with our teacher.", sc: "我们和老师一起观察鸟。" },
+        { en: "rule", ipa: "/ruːl/", zh: "规则，规定", s: "Read the rules before you go in.", sc: "进去之前请先读一下规则。" },
+        { en: "follow", ipa: "/ˈfɒləʊ/", zh: "遵循", s: "Please follow these rules in the reserve.", sc: "在保护区里请遵守这些规定。" }
+      ]
+    },
+    {
+      name: "Unit 6 Fun times",
+      words: [
+        { en: "time", ipa: "/taɪm/", zh: "时光，时日，岁月", s: "We had a good time together today.", sc: "我们今天一起玩得很开心。" },
+        { en: "super", ipa: "/ˈsuːpə/", zh: "极好的，了不起的", s: "The school show tonight is super!", sc: "今晚的学校演出太棒了！" },
+        { en: "dance", ipa: "/dɑːns/", zh: "跳（舞）", s: "Can you dance to this rock music?", sc: "你能跟着这首摇滚乐跳舞吗？" },
+        { en: "piano", ipa: "/piˈænəʊ/", zh: "钢琴", s: "There is a new piano in the music room.", sc: "音乐教室里有一架新钢琴。" },
+        { en: "play the piano", ipa: "/ˌpleɪ ðə piˈænəʊ/", zh: "弹钢琴", s: "My friend can play the piano very well.", sc: "我朋友钢琴弹得很好。" },
+        { en: "sit", ipa: "/sɪt/", zh: "坐", s: "Sit here and watch the show.", sc: "坐在这里看演出吧。" },
+        { en: "singer", ipa: "/ˈsɪŋə/", zh: "歌手，歌唱家", s: "Her dream is to be a singer.", sc: "她的梦想是成为一名歌手。" },
+        { en: "snow", ipa: "/snəʊ/", zh: "雪", s: "Look at the white snow outside the window.", sc: "看窗外的白雪。" },
+        { en: "snowman", ipa: "/ˈsnəʊmæn/", zh: "雪人", s: "Let us make a snowman after school.", sc: "放学后我们堆个雪人吧。" },
+        { en: "fan", ipa: "/fæn/", zh: "狂热崇拜者，……迷", s: "I am a big fan of this young singer.", sc: "我是这位年轻歌手的忠实粉丝。" }
+      ]
+    },
+    {
+      name: "Plays",
+      words: [
+        { en: "loudly", ipa: "/ˈlaʊdli/", zh: "大声地", s: "Do not talk loudly in the museum.", sc: "不要在博物馆里大声说话。" },
+        { en: "must", ipa: "/mʌst/", zh: "必须", s: "We must be quiet in the museum.", sc: "我们在博物馆里必须保持安静。" },
+        { en: "dinosaur", ipa: "/ˈdaɪnəsɔː/", zh: "恐龙", s: "These dinosaur bones are very old.", sc: "这些恐龙骨头非常古老。" },
+        { en: "bone", ipa: "/bəʊn/", zh: "骨，骨头", s: "Please do not touch the big bone.", sc: "请不要触摸那块大骨头。" },
+        { en: "suddenly", ipa: "/ˈsʌdənli/", zh: "突然", s: "Suddenly the bus stops in the rain.", sc: "突然，公共汽车在雨中停了下来。" },
+        { en: "storm", ipa: "/stɔːm/", zh: "暴风雨", s: "The storm comes when we are inside.", sc: "暴风雨来的时候我们在屋里。" },
+        { en: "cave", ipa: "/keɪv/", zh: "洞穴，山洞", s: "They find a dark cave in the hill.", sc: "他们在小山上发现一个黑暗的山洞。" },
+        { en: "careful", ipa: "/ˈkeəfl/", zh: "谨慎的，小心翼翼的", s: "Be careful! The floor is very wet.", sc: "小心！地板很湿。" },
+        { en: "free", ipa: "/friː/", zh: "免费的", s: "Here are free tickets to the museum.", sc: "这是几张博物馆的免费门票。" },
+        { en: "ticket", ipa: "/ˈtɪkɪt/", zh: "票，入场券", s: "Show your ticket at the door, please.", sc: "请在门口出示你的票。" },
+        { en: "player", ipa: "/ˈpleɪə/", zh: "演奏者", s: "The young player can sing and dance.", sc: "这位年轻的演奏者既会唱歌又会跳舞。" },
+        { en: "happily", ipa: "/ˈhæpɪli/", zh: "快乐地，欢乐地", s: "The children sing happily on the bus.", sc: "孩子们在公共汽车上快乐地唱歌。" },
+        { en: "palace", ipa: "/ˈpæləs/", zh: "王宫；宫殿", s: "The old palace has many big rooms.", sc: "这座古老的宫殿有很多大房间。" },
+        { en: "servant", ipa: "/ˈsɜːvənt/", zh: "仆人，佣人", s: "A servant opens the door for us.", sc: "一位仆人为我们打开了门。" },
+        { en: "actor", ipa: "/ˈæktə/", zh: "演员", s: "Every actor in this play is great.", sc: "这部剧里的每个演员都很棒。" },
+        { en: "die", ipa: "/daɪ/", zh: "死去，死亡", s: "In the end, the old king dies.", sc: "最后，老国王去世了。" }
+      ]
+    }
+  ]
+};
+
+</script>
+<script>
+
+
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
+  .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+
+function cardHtml(w, i){
+  return '<div class="card" data-en="'+esc(w.en)+'" data-zh="'+esc(w.zh)+'"'
+    + ' data-s="'+esc(w.s)+'" data-sc="'+esc(w.sc)+'">'
+    + '<div class="r1"><span class="num">'+(i+1)+'</span>'
+    + '<span class="en">'+esc(w.en)+'</span>'
+    + '<span class="ipa">'+esc(w.ipa)+'</span><span class="spacer"></span>'
+    + '<button class="tts" data-t="'+esc(w.en)+'" data-l="en" title="朗读单词（英文）">🔊 英</button>'
+    + '<button class="tts" data-t="'+esc(w.zh)+'" data-l="zh" title="朗读释义（中文）">🔊 中</button></div>'
+    + '<div class="zh">'+esc(w.zh)+'</div>'
+    + '<div class="sent"><button class="tts" data-t="'+esc(w.s)+'" data-l="en" title="朗读例句（英文）">🔊</button>'
+    + '<span class="sen-en">'+esc(w.s)+'</span></div>'
+    + '<div class="sent"><button class="tts" data-t="'+esc(w.sc)+'" data-l="zh" title="朗读例句（中文）">🔊</button>'
+    + '<span class="sen-zh">'+esc(w.sc)+'</span></div>'
+    + '</div>';
+}
+
+/* ---------- 课本切换 ---------- */
+const BOOKS = [window.BOOK_G3_1, window.BOOK_G3_2, window.BOOK_G4_1, window.BOOK_G4_2]
+  .filter(function(b){ return !!b; });
+const BK = 'ew_book_v1';
+let CUR = BOOKS[0];
+function totalWords(b){ return b.units.reduce(function(n,u){ return n + u.words.length; }, 0); }
+
+function renderBooks(){
+  const box = document.getElementById('books');
+  box.innerHTML = '';
+  BOOKS.forEach(function(b){
+    const t = document.createElement('button');
+    t.textContent = b.name + ' · ' + totalWords(b) + '词';
+    if(b.id === CUR.id) t.className = 'on';
+    t.onclick = function(){ if(b.id !== CUR.id) switchBook(b.id); };
+    box.appendChild(t);
+  });
+  const v = document.getElementById('ver');
+  v.textContent = '📘 ' + CUR.version + '　·　' + CUR.units.length + ' 个单元 · ' + totalWords(CUR) + ' 个词条';
+}
+function switchBook(id){
+  stopAll();
+  const b = BOOKS.filter(function(x){ return x.id === id; })[0];
+  if(!b) return;
+  CUR = b;
+  try{ localStorage.setItem(BK, id); }catch(e){}
+  renderBooks();
+  render();
+  applySearch();
+  try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(e){}
+}
+
+function render(){
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  CUR.units.forEach(function(u, ui){
+    const det = document.createElement('details');
+    det.className = 'unit'; det.id = 'unit'+ui;
+    if(ui === 0) det.open = true;
+    det.innerHTML = '<summary><span class="uname">'+esc(u.name)+'</span>'
+      + '<span class="meta">'+u.words.length+' 词</span>'
+      + '<button class="play-all" data-u="'+ui+'">▶ 连播本单元</button></summary>'
+      + '<div class="cards">' + u.words.map(cardHtml).join('') + '</div>';
+    app.appendChild(det);
+  });
+  const tip = document.createElement('div');
+  tip.className = 'none'; tip.style.display = 'none'; tip.id = 'noRes';
+  tip.textContent = '没有匹配的单词';
+  app.appendChild(tip);
+}
+
+/* ---------- 发音引擎 ---------- */
+/* 手机（尤其微信内置浏览器）对 speechSynthesis 支持很差，经常完全无声。
+   因此改为「在线发音音频优先 + 浏览器 TTS 兜底」：<audio> 在微信里可用，TTS 不可靠。 */
+let voices = [];
+function loadVoices(){ voices = window.speechSynthesis ? (speechSynthesis.getVoices()||[]) : []; }
+if(window.speechSynthesis){ loadVoices(); speechSynthesis.onvoiceschanged = loadVoices; }
+function pickVoice(lang){
+  loadVoices();
+  if(!voices.length) return null;
+  const want = lang === 'zh' ? 'zh' : 'en';
+  const exact = lang === 'zh' ? 'zh-cn' : 'en-us';
+  const lt = function(x){ return (x.lang||'').toLowerCase().replace('_','-'); };
+  let v = voices.find(function(x){ return lt(x) === exact && x.localService; })
+        || voices.find(function(x){ return lt(x) === exact; })
+        || voices.find(function(x){ return lt(x).indexOf(want) === 0 && x.localService; })
+        || voices.find(function(x){ return lt(x).indexOf(want) === 0; });
+  return v || null;
+}
+function rate(){ const s = document.getElementById('speed'); return s ? parseFloat(s.value) : 0.85; }
+
+/* 在线发音（有道公开发音接口，国内可直接访问） */
+function audioUrl(text, lang){
+  return 'https://dict.youdao.com/dictvoice?audio=' + encodeURIComponent(text)
+       + (lang === 'zh' ? '&le=zh' : '&type=1');
+}
+let audioEl = null;
+function getAudio(){
+  if(!audioEl){ audioEl = new Audio(); audioEl.preload = 'auto'; }
+  return audioEl;
+}
+function stopSound(){
+  try{ if(audioEl){ audioEl.pause(); audioEl.currentTime = 0; } }catch(e){}
+  if(window.speechSynthesis){ try{ speechSynthesis.cancel(); }catch(e){} }
+}
+
+/* 浏览器 TTS 兜底：修复 cancel 紧跟 speak 被吞、以及对象被回收的问题 */
+let lastUtt = null;
+function ttsSpeak(text, lang, onend, onerr){
+  if(!window.speechSynthesis){ if(onerr) onerr(); return; }
+  try{ speechSynthesis.resume(); }catch(e){}
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang === 'zh' ? 'zh-CN' : 'en-US';
+  const v = pickVoice(lang); if(v) u.voice = v;
+  u.rate = rate();
+  lastUtt = u;                       // 保持引用，避免被 GC 中断
+  if(onend) u.onend = onend;
+  if(onerr) u.onerror = onerr;
+  setTimeout(function(){ try{ speechSynthesis.speak(u); }catch(e){ if(onerr) onerr(); } }, 0);
+}
+
+/* 统一入口：先试在线音频，播不出来自动切浏览器 TTS */
+function speak(text, lang, onend, onerr){
+  text = String(text == null ? '' : text).trim();
+  if(!text){ if(onend) onend(); return; }
+  stopSound();
+  const a = getAudio();
+  let finished = false, timer = null;
+  const done = function(){
+    if(finished) return; finished = true;
+    if(timer) clearTimeout(timer);
+    a.onended = a.onerror = null;
+    if(onend) onend();
+  };
+  const fail = function(){
+    if(finished) return; finished = true;
+    if(timer) clearTimeout(timer);
+    a.onended = a.onerror = null;
+    try{ a.pause(); }catch(e){}
+    ttsSpeak(text, lang, onend, onerr);
+  };
+  timer = setTimeout(fail, 8000);   // 8 秒还播不完视为失败
+  a.onended = done;
+  a.onerror = fail;
+  a.src = audioUrl(text, lang);
+  try{ a.playbackRate = rate(); }catch(e){}
+  const p = a.play();
+  if(p && p.catch) p.catch(fail);
+}
+
+/* 发音自检 */
+function testVoice(){
+  const box = document.getElementById('voiceWarn');
+  box.style.display = 'block';
+  box.className = '';
+  box.textContent = '🔊 正在试听…';
+  speak('hello', 'en', function(){
+    box.textContent = '✅ 发音正常（如仍听不到，请调高音量；iPhone 请关掉侧边静音开关）。';
+  }, function(){
+    box.textContent = '⚠ 发音失败：请改用 Safari / Chrome 打开，或检查网络。';
+  });
+}
+
+function stopAll(){
+  playing = false; curSteps = null;
+  stopSound();
+  clearHi();
+}
+
+/* ---------- 连播 ---------- */
+let playing = false, curSteps = null;
+function clearHi(){
+  document.querySelectorAll('.card.hi').forEach(function(c){ c.classList.remove('hi'); });
+}
+function playUnit(ui){
+  const cards = Array.prototype.slice.call(
+    document.querySelectorAll('#unit'+ui+' .card'));
+  curSteps = [];
+  cards.forEach(function(c){
+    curSteps.push({t:c.dataset.en, l:'en', c:c});
+    curSteps.push({t:c.dataset.zh, l:'zh', c:c});
+    curSteps.push({t:c.dataset.s,  l:'en', c:c});
+    curSteps.push({t:c.dataset.sc, l:'zh', c:c});
+  });
+  playing = true;
+  next(0);
+}
+function next(i){
+  if(!playing || !curSteps || i >= curSteps.length){ stopAll(); return; }
+  const st = curSteps[i];
+  clearHi();
+  if(st.c){ st.c.classList.add('hi'); st.c.scrollIntoView({block:'nearest', behavior:'smooth'}); }
+  speak(st.t, st.l, function(){ next(i+1); }, function(){ stopAll(); });
+}
+
+/* ---------- 事件 ---------- */
+document.addEventListener('click', function(e){
+  const b = e.target.closest('.tts');
+  if(b){ e.stopPropagation(); playing = false; speak(b.dataset.t, b.dataset.l); return; }
+  const p = e.target.closest('.play-all');
+  if(p){ e.preventDefault(); e.stopPropagation(); playUnit(parseInt(p.dataset.u,10)); return; }
+});
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape') stopAll();
+});
+function applySearch(){
+  const el = document.getElementById('search');
+  if(!el) return;
+  const q = el.value.trim().toLowerCase();
+  let any = false;
+  document.querySelectorAll('details.unit').forEach(function(det){
+    let hit = 0;
+    det.querySelectorAll('.card').forEach(function(c){
+      const show = !q || c.textContent.toLowerCase().indexOf(q) !== -1;
+      c.style.display = show ? '' : 'none';
+      if(show) hit++;
+    });
+    det.style.display = hit ? '' : 'none';
+    if(q){ det.open = hit > 0; } 
+    if(hit) any = true;
+  });
+  const nr = document.getElementById('noRes');
+  if(nr) nr.style.display = any ? 'none' : 'block';
+}
+document.getElementById('search').addEventListener('input', applySearch);
+function expandAll(open){
+  document.querySelectorAll('details.unit').forEach(function(d){ d.open = open; });
+}
+
+/* iOS/微信：首次真实点击时用一次性静音音频解锁播放能力（不影响正常朗读） */
+window.addEventListener('click', function prime(){
+  try{
+    const a = new Audio();
+    a.src = audioUrl('a', 'en');
+    a.muted = true;
+    const p = a.play();
+    if(p && p.then) p.then(function(){ try{ a.pause(); }catch(e){} }).catch(function(){});
+  }catch(e){}
+}, { once:true, capture:true });
+
+/* 启动：恢复上次选择的课本 */
+(function(){
+  try{
+    const s = localStorage.getItem(BK);
+    if(s){ const b = BOOKS.filter(function(x){ return x.id === s; })[0]; if(b) CUR = b; }
+  }catch(e){}
+  renderBooks();
+  render();
+})();
+</script>
+</body>
+</html>
